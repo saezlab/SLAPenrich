@@ -1,0 +1,16 @@
+Package: SLAPenrich
+Type: Package
+Title: Sample-population Level Analysis of Pathway enrichments (Title Case)
+Version: 0.1
+Date: 2016-01-15
+Author: Francesco Iorio
+Maintainer: Francesco Iorio <iorio@ebi.ac.uk>
+Description: SLAPenrich implements a statistical framework to identify pathways that tend to be recurrently genomically altered across a collection of samples. Differently from traditional over-recurrence analyses, SLAPenrich does not require the genes belonging to a given pathway to be statistically enriched among those altered in the individual samples. Additionally it assumes that a pathway might be disregulated in a given sample even if only one of its composing genes is genomically altered in that sample.
+License: MIT
+Imports: stringr
+Imports: poibin
+Imports: pheatmap
+Imports: qvalue
+Imports: TxDb.Hsapiens.UCSC.hg19.knownGene
+Imports: org.Hs.eg.db
+
