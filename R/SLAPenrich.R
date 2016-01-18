@@ -666,8 +666,7 @@ SLAPE.coreComponents<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0){
                        filename=filen)
         }
 
-        Sys.sleep(1)
-        close(pb)
+        
         genesInCoreComponent<-100*rowSums(BEM[rownames(subData),])/ncol(BEM)
         pathwaysAndEnrichsFDR<-verdata
 
@@ -676,5 +675,7 @@ SLAPE.coreComponents<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0){
         save(DATAtoPlot,file=paste(filen,'.rdata',sep=''))
 
     }
+    Sys.sleep(1)
+    close(pb)
 }
 
