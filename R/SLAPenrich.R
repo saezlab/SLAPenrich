@@ -164,37 +164,50 @@ SLE.buildPathMemb<-function(GENES,pathway_ids){
 
     return(MM)
 }
-SLE.KnownGenesInRefGenome<-function(){
-    txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
-    gn <- sort(genes(txdb))
-    gn <- unlist(gn$gene_id)
-    return(gn)
-}
-SLE.computeGeneLengths<-function(){
 
-    exons.db = exonsBy(TxDb.Hsapiens.UCSC.hg19.knownGene, by='gene')
+SLE.mergeOverlappingExons<-function(startPos,endPos){
+    minPos<-min(startPos)
+    maxPos<-max(endPos)
+    
+    span<-maxPos-minPos+1
+    
+    nsegments<-length(startPos)
+    
+    cocMat<-matrix(0,nsegments,span,dimnames = list(1:nsegments,as.character(minPos:maxPos)))
+    
+    for (i in 1:nsegments){
+        cocMat[i,as.character(startPos[i]:endPos[i])]<-1
+    }
+    
+    cocMat<-cumsum(sign(colSums(cocMat)))
+    cocMat<-cocMat[length(cocMat)]
+    names(cocMat)<-NULL
+    return(cocMat)
+    }
 
-    egs    = KnownGenesInRefGenome()
-    egs<-intersect(egs,keys(org.Hs.egACCNUM))
-
-    GL<-rep(NA,length(egs))
-    names(GL)<-egs
-
-    GL<-sapply(egs,function(eg)
-    {
-        print(which(egs==eg))
-
-        exons = exons.db[[eg]]
-        if(length(exons)>0){
-            exons = reduce(exons)
-            L<-sum( width(exons) )
-        }else{
-            L<-NA
+SLE.computeGeneLengths<-function(ensembleFileName){
+        
+    mart_content<-read.csv(ensembleFileName,header=TRUE,stringsAsFactors = FALSE)    
+    uniqueGS<-unique(mart_content$Associated.Gene.Name)
+    ngenes<-length(uniqueGS)
+    
+    gLenghts<-rep(NA,ngenes)
+    names(gLenghts)<-uniqueGS
+        
+    for (i in 1:ngenes){
+        print(i)
+        id<-which(is.element(mart_content$Associated.Gene.Name,uniqueGS[i]))
+        
+        if (length(id)==1){
+            gLenghts[i]<-mart_content$Exon.Chr.End..bp.[id]-mart_content$Exon.Chr.Start..bp.[id]+1
+            }
+        
+        startPos<-mart_content$Exon.Chr.Start..bp.[id]
+        endPos<-mart_content$Exon.Chr.End..bp.[id]
+        
+        gLenghts[i]<-SLE.mergeOverlappingExons(startPos,endPos)
         }
-    })
 
-    names(GL)<-getSYMBOL(names(GL), data='org.Hs.eg')
-    return(GL)
 }
 SLE.assignTotalLengthTOpathways<-function(){
     np<-length(PATHCOM_HUMAN$PATHWAY)
@@ -297,7 +310,7 @@ SLAPE.Analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=
                                      BACKGROUNDpopulation=NULL){
 
     if(length(BACKGROUNDpopulation)>0){
-            if(length(duplicated(BACKGROUNDpopulation))>0){
+            if(length(which(duplicated(BACKGROUNDpopulation)))>0){
                 warning('Duplicated gene names found in the background population')
                 }
             BACKGROUNDpopulation<-unique(BACKGROUNDpopulation)
@@ -313,12 +326,14 @@ SLAPE.Analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=
         if(!length(BACKGROUNDpopulation)){
             N<-sum(gLenghts[unique(names(gLenghts))],na.rm = TRUE)
         }else{
-            N<-all_genes_exonic_lengths[unique(BACKGROUNDpopulation)]
+            N<-sum(all_genes_exonic_lengths[unique(BACKGROUNDpopulation)])
         }
     }else{
         cat('Sample fingerprinting for pathawy alterations...\n')
         if(!length(BACKGROUNDpopulation)){
-            N<-length(unique(unlist(PATHCOM_HUMAN$Glengths)))
+            N<-unlist(PATHCOM_HUMAN$Glengths)
+            N<-N[unique(names(N))]
+            N<-sum(N,na.rm = TRUE)
         }else{
             N<-length(BACKGROUNDpopulation)
             }
