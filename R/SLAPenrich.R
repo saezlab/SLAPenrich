@@ -211,6 +211,7 @@ SLAPE.Check_and_fix_PathwayCollection<-function(Pathways){
     np<-length(Pathways$PATHWAY)
     
     for (i in 1:np){
+        print(i)
         currentGS<-Pathways$HGNC_SYMBOL[[i]]
         checked_gs<-checkGeneSymbols(currentGS)    
         non_approved_id<-which(checked_gs[,2]==FALSE)
@@ -237,6 +238,9 @@ SLAPE.Check_and_fix_PathwayCollection<-function(Pathways){
                 GECOBLenghts[currentGS]
             }
     }
+    
+    Pathways$backGround<-sort(unique(unlist(Pathways$HGNC_SYMBOL)))
+    
     return(Pathways)
 }
 
