@@ -205,6 +205,7 @@ SLAPE.Check_and_fix_GS_Dataset<-function(Dataset){
     return(Dataset)
 }
 
+########################################
 SLAPE.Check_and_fix_PathwayCollection<-function(Pathways){
     
     np<-length(Pathways$PATHWAY)
