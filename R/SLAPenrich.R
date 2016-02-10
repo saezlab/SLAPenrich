@@ -179,6 +179,67 @@ SLAPE.readDataset<-function(filename){
     
     return(fc)
 }
+SLAPE.Check_and_fix_GS_Dataset<-function(Dataset){
+    checked_gs<-checkGeneSymbols(rownames(Dataset))    
+
+    non_approved_id<-which(checked_gs[,2]==FALSE)
+    
+    if (length(non_approved_id)>0){
+
+        print('The dataset contains non-approved gene symbols...')
+        print('Outdated gene symbols have been updated:')
+
+        outdated_id<-non_approved_id[which(!is.na(checked_gs[non_approved_id,3]))]
+        print(paste(checked_gs[outdated_id,1],'->',checked_gs[outdated_id,3]))
+        
+        non_approved_id<-which(is.na(checked_gs[,3]))
+        if(length(non_approved_id)>0){
+            print('The following non approved gene symbols have been removed:')
+            print(checked_gs[non_approved_id,1])
+        
+            }
+        rownames(Dataset)[outdated_id]<-checked_gs[outdated_id,3]
+        Dataset<-Dataset[setdiff(rownames(Dataset),rownames(Dataset)[non_approved_id]),]
+        }
+    
+    return(Dataset)
+}
+
+SLAPE.Check_and_fix_PathwayCollection<-function(Pathways){
+    
+    np<-length(Pathways$PATHWAY)
+    
+    for (i in 1:np){
+        currentGS<-Pathways$HGNC_SYMBOL[[i]]
+        checked_gs<-checkGeneSymbols(currentGS)    
+        non_approved_id<-which(checked_gs[,2]==FALSE)
+        
+        if (length(non_approved_id)>0){
+
+            print(paste('The pathway',Pathways$PATHWAY[i],'contains non-approved gene symbols...'))
+            print('Outdated gene symbols have been updated:')
+            
+            outdated_id<-non_approved_id[which(!is.na(checked_gs[non_approved_id,3]))]
+            print(paste(checked_gs[outdated_id,1],'->',checked_gs[outdated_id,3]))
+            
+            non_approved_id<-which(is.na(checked_gs[,3]))
+            if(length(non_approved_id)>0){
+                print('The following non approved gene symbols have been removed:')
+                print(checked_gs[non_approved_id,1])
+                }
+            
+            currentGS[outdated_id]<-checked_gs[outdated_id,3]
+            currentGS<-setdiff(currentGS,currentGS[non_approved_id])
+            Pathways$HGNC_SYMBOL[[i]]<-currentGS
+            Pathways$Ngenes<-length(currentGS)
+            Pathways$Glengths<-
+                GECOBLenghts[currentGS]
+            }
+    }
+    return(Pathways)
+}
+
+
 SLAPE.Analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=1,NGENES=1,accExLength=TRUE,
                         BACKGROUNDpopulation=NULL){
     
@@ -651,13 +712,12 @@ SLAPE.computeGeneExonContentBlockLengths<-function(ExonAttributes){
     ngenes<-length(uniqueGS)
     
     GECOBLenghts<-rep(NA,ngenes)
-    names(GECOBLenghts)<-uniqueGS
+    names(GECOBLenghts)<-uniqueGS[1:ngenes]
     
     pb<-txtProgressBar(min = 0, max = ngenes, initial = 0,style = 3)
     
     for (i in 1:ngenes){
-        print(i)
-        #setTxtProgressBar(pb,i)
+        setTxtProgressBar(pb,i)
         GECOBLenghts[i]<-SLAPE.Gene_ECBLength(ExonAttributes,uniqueGS[i])
     }
     close(pb)

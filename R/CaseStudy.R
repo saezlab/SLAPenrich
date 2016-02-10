@@ -8,8 +8,8 @@ SampleIds<-as.character(setdiff(SampleIds,NA))
 
 Dataset<-matrix(0,length(GeneIds),length(SampleIds),dimnames = list(GeneIds,SampleIds))
 
-nvariants<-nrow(LungTSPvariants)
 
+nvariants<-nrow(LungTSPvariants)
 for (i in 1:nvariants){
     sampleId<-as.character(LungTSPvariants$Tumor.ID[i])
     geneId<-LungTSPvariants$HUGO.Symbol[i]
@@ -18,11 +18,14 @@ for (i in 1:nvariants){
     }
 }
 
+Dataset<-SLAPE.Check_and_fix_GS_Dataset(Dataset)
+
 #library(SLAPenrich)
 data("SLAPE.20140608_PATHCOM_HUMAN_nonredundant_intersection")
-data("SLAPE.all_genes_exonic_lengths")
+load("data/SLAPE.all_genes_exonic_content_block_lengths_ensemble_20160209.RData")
 
-Dataset<-Dataset[intersect(rownames(Dataset),names(gLenghts)),]
+PATHCOM_HUMAN<-
+    SLAPE.Check_and_fix_PathwayCollection(PATHCOM_HUMAN)
 
 PFPw<-SLAPE.Analyse(wBEM = Dataset,
               show_progress = TRUE,
