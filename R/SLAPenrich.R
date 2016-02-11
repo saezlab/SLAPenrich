@@ -68,35 +68,35 @@ SLE.findBestInClass<-function(patterns){
     
     return(names(sort(exclCov,decreasing=TRUE))[1])
 }
-SLE.buildPathMemb<-function(GENES,pathway_ids){
+SLE.buildPathMemb<-function(GENES,pathway_ids,PATH_COLLECTION){
     np<-length(pathway_ids)
     ngenes<-length(GENES)
     MM<-matrix(0,ngenes,np,dimnames = list(GENES,pathway_ids))
     
     for (i in 1:np){
-        MM[,i]<-is.element(GENES,PATHCOM_HUMAN$HGNC_SYMBOL[[pathway_ids[i]]])+0
+        MM[,i]<-is.element(GENES,PATH_COLLECTION$HGNC_SYMBOL[[pathway_ids[i]]])+0
     }
     
     return(MM)
 }
 SLE.assignTotalLengthTOpathways<-function(){
-    np<-length(PATHCOM_HUMAN$PATHWAY)
+    np<-length(PATH_COLLECTION$PATHWAY)
     
     Glenghts<-list()
     TOTAL_G_LENGHT<-vector()
     for (i in 1:np){
         print(i)
-        Glenghts[[i]]<-gene_in_path_lengths[PATHCOM_HUMAN$HGNC_SYMBOL[[i]]]
-        TOTAL_G_LENGHT[i]<-sum(gene_in_path_lengths[PATHCOM_HUMAN$HGNC_SYMBOL[[i]]],na.rm = TRUE)
+        Glenghts[[i]]<-gene_in_path_lengths[PATH_COLLECTION$HGNC_SYMBOL[[i]]]
+        TOTAL_G_LENGHT[i]<-sum(gene_in_path_lengths[PATH_COLLECTION$HGNC_SYMBOL[[i]]],na.rm = TRUE)
     }
     
-    names(Glenghts)<-PATHCOM_HUMAN$PATHWAY
-    names(TOTAL_G_LENGHT)<-PATHCOM_HUMAN$PATHWAY
+    names(Glenghts)<-PATH_COLLECTION$PATHWAY
+    names(TOTAL_G_LENGHT)<-PATH_COLLECTION$PATHWAY
     
-    PATHCOM_HUMAN$Glengths<-Glenghts
-    PATHCOM_HUMAN$TOTAL_G_LENGHT<-TOTAL_G_LENGHT
+    PATH_COLLECTION$Glengths<-Glenghts
+    PATH_COLLECTION$TOTAL_G_LENGHT<-TOTAL_G_LENGHT
     
-    return(PATHCOM_HUMAN)
+    return(PATH_COLLECTION)
     
 }
 SLE.combine<-function(wResults,unwResults,fdrTH=20){
@@ -245,7 +245,7 @@ SLAPE.Check_and_fix_PathwayCollection<-function(Pathways,updated.hgnc.table=upda
 
 
 SLAPE.Analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=1,NGENES=1,accExLength=TRUE,
-                        BACKGROUNDpopulation=NULL){
+                        BACKGROUNDpopulation=NULL,PATH_COLLECTION){
     
     if(length(BACKGROUNDpopulation)>0){
         if(length(which(duplicated(BACKGROUNDpopulation)))>0){
@@ -260,27 +260,27 @@ SLAPE.Analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=
     
     if(accExLength){
         cat('Sample fingerprinting for pathawy alterations (accounting for gene exonic length)...\n')
-        gLenghts<-unlist(PATHCOM_HUMAN$Glengths)
+        gnames<-unlist(PATH_COLLECTION$HGNC_SYMBOL)
         if(!length(BACKGROUNDpopulation)){
-            N<-sum(GECOBLenghts[unique(names(gLenghts))],na.rm = TRUE)
+            N<-sum(GECOBLenghts[unique(gnames)],na.rm = TRUE)
         }else{
             N<-sum(GECOBLenghts[unique(BACKGROUNDpopulation)])
         }
     }else{
         cat('Sample fingerprinting for pathawy alterations...\n')
         if(!length(BACKGROUNDpopulation)){
-            N<-unlist(PATHCOM_HUMAN$HGNC_SYMBOL)
+            N<-unlist(PATH_COLLECTION$HGNC_SYMBOL)
             N<-length(unique(N))
         }else{
             N<-length(BACKGROUNDpopulation)
         }
     }
     
-    np<-length(PATHCOM_HUMAN$PATHWAY)
+    np<-length(PATH_COLLECTION$PATHWAY)
     
     nsamples<-ncol(wBEM)
     
-    PN<-PATHCOM_HUMAN$PATHWAY
+    PN<-PATH_COLLECTION$PATHWAY
     
     pathway_BEM<-matrix(0,nrow=np,ncol=nsamples,dimnames=list(1:np,colnames(wBEM)))
     pathway_Probability<-matrix(0,nrow=np,ncol=nsamples,dimnames=list(1:np,colnames(wBEM)))
@@ -297,7 +297,7 @@ SLAPE.Analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=
     toExclude<-rep(FALSE,np)
     for (i in 1:np){
         
-        currentGeneSet<-intersect(PATHCOM_HUMAN$HGNC_SYMBOL[[i]],rownames(wBEM))
+        currentGeneSet<-intersect(PATH_COLLECTION$HGNC_SYMBOL[[i]],rownames(wBEM))
         
         GLENGHTS<-
             GECOBLenghts[currentGeneSet]
@@ -346,7 +346,7 @@ SLAPE.Analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=
         close(pb)
     }
     
-    pathway_id<-1:length(PATHCOM_HUMAN$PATHWAY)
+    pathway_id<-1:length(PATH_COLLECTION$PATHWAY)
     
     pathway_mus<-rowSums(pathway_Probability)
     pathway_var<-rowSums(1-pathway_Probability)*pathway_Probability
@@ -408,7 +408,7 @@ SLAPE.Analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=
                 pathway_exclusiveCoverage=pathwayExclusive_coverage,
                 pathway_individualBEMs=pathway_individualBEMs))
 }
-SLAPE.write.table<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0){
+SLAPE.write.table<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0,PATH_COLLECTION){
     
     id<-which(PFP$pathway_exclusiveCoverage>exclcovth & PFP$pathway_perc_fdr<fdrth)
     
@@ -421,7 +421,7 @@ SLAPE.write.table<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0){
     PFP$pathway_exclusiveCoverage<-PFP$pathway_exclusiveCoverage[id]
     PFP$pathway_Probability<-PFP$pathway_Probability[id,]
     
-    NAMES<-PATHCOM_HUMAN$PATHWAY[PFP$pathway_id]
+    NAMES<-PATH_COLLECTION$PATHWAY[PFP$pathway_id]
     
     NAMES<-str_replace_all(NAMES,',','//')
     
@@ -429,13 +429,13 @@ SLAPE.write.table<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0){
     TOTexlength<-rep(NA,length(NAMES))
     
     for (i in 1:length(NAMES)){
-        TOTexlength[i]<-sum(GECOBLenghts[PATHCOM_HUMAN$HGNC_SYMBOL[[PFP$pathway_id[i]]]])    
+        TOTexlength[i]<-sum(GECOBLenghts[PATH_COLLECTION$HGNC_SYMBOL[[PFP$pathway_id[i]]]])    
     }
     
     np<-length(PFP$pathway_id)
     mutGenes<-rep('',length(np))
     for (i in 1:np){
-        currentGenes<-PATHCOM_HUMAN$HGNC_SYMBOL[[PFP$pathway_id[i]]]
+        currentGenes<-PATH_COLLECTION$HGNC_SYMBOL[[PFP$pathway_id[i]]]
         currentGenes<-intersect(currentGenes,rownames(BEM))
         
         if (length(currentGenes)>1){
@@ -450,7 +450,7 @@ SLAPE.write.table<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0){
     
     totres<-cbind(NAMES,
                   PFP$pathway_id,
-                  PATHCOM_HUMAN$Ngenes[PFP$pathway_id],
+                  PATH_COLLECTION$Ngenes[PFP$pathway_id],
                   TOTexlength,
                   PFP$pathway_mus,
                   rowSums(PFP$pathway_BEM),
@@ -475,9 +475,9 @@ SLAPE.write.table<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0){
     
     write.csv(totres,file=filename,quote=FALSE,row.names=FALSE)
 }
-SLAPE.pathVis<-function(BEM,PFP,Id,i=NULL,PATH='./'){
+SLAPE.pathVis<-function(BEM,PFP,Id,i=NULL,PATH='./',PATH_COLLECTION){
     
-    genes<-PATHCOM_HUMAN$HGNC_SYMBOL[[Id]]
+    genes<-PATH_COLLECTION$HGNC_SYMBOL[[Id]]
     
     nGenesInPath<-length(genes)
     genes<-intersect(genes,rownames(BEM))
@@ -499,7 +499,7 @@ SLAPE.pathVis<-function(BEM,PFP,Id,i=NULL,PATH='./'){
         FDR<-format(FDR,digits = 3)
     }
     
-    NAME<-PATHCOM_HUMAN$PATHWAY[Id]
+    NAME<-PATH_COLLECTION$PATHWAY[Id]
     
     NAME<-paste(str_trim(unlist(str_split(NAME,'//'))),collapse='\n')
     
@@ -534,7 +534,7 @@ SLAPE.pathVis<-function(BEM,PFP,Id,i=NULL,PATH='./'){
     
     dev.off()
 }
-SLAPE.serialPathVis<-function(BEM,PFP,fdrth=5,exCovTh=50,PATH='./'){
+SLAPE.serialPathVis<-function(BEM,PFP,fdrth=5,exCovTh=50,PATH='./',PATH_COLLECTION){
     Ids<-which(PFP$pathway_perc_fdr<fdrth & PFP$pathway_exclusiveCoverage>exCovTh)
     
     if (length(Ids)==0){
@@ -548,14 +548,14 @@ SLAPE.serialPathVis<-function(BEM,PFP,fdrth=5,exCovTh=50,PATH='./'){
         for (i in 1:length(Ids)){
             
             setTxtProgressBar(pb, i)
-            SLAPE.pathVis(BEM = BEM,PFP = PFP,i = i,Id = PFP$pathway_id[Ids[i]],PATH = PATH)
+            SLAPE.pathVis(BEM = BEM,PFP = PFP,i = i,Id = PFP$pathway_id[Ids[i]],PATH = PATH,PATH_COLLECTION = PATH_COLLECTION)
         }
         Sys.sleep(1)
         close(pb)
         print('+ Done!')
     }
 }
-SLAPE.coreComponents<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0){
+SLAPE.coreComponents<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0,PATH_COLLECTION){
     
     BEM<-sign(BEM)
     
@@ -570,7 +570,7 @@ SLAPE.coreComponents<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0){
     PFP$pathway_exclusiveCoverage<-PFP$pathway_exclusiveCoverage[id]
     PFP$pathway_Probability<-PFP$pathway_Probability[id,]
     
-    NAMES<-PATHCOM_HUMAN$PATHWAY[PFP$pathway_id]
+    NAMES<-PATH_COLLECTION$PATHWAY[PFP$pathway_id]
     
     NAMES<-str_replace_all(NAMES,',','//')
     
@@ -580,7 +580,7 @@ SLAPE.coreComponents<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0){
     
     
     for (i in 1:np){
-        currentGenes<-PATHCOM_HUMAN$HGNC_SYMBOL[[PFP$pathway_id[i]]]
+        currentGenes<-PATH_COLLECTION$HGNC_SYMBOL[[PFP$pathway_id[i]]]
         currentGenes<-intersect(currentGenes,rownames(BEM))
         
         if (i == 1){
@@ -594,7 +594,7 @@ SLAPE.coreComponents<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0){
     
     FREQS<-sort(rowSums(BEM[mutG,]),decreasing=TRUE)
     
-    MM<-SLE.buildPathMemb(mutG,PFP$pathway_id)
+    MM<-SLE.buildPathMemb(mutG,PFP$pathway_id,PATH_COLLECTION)
     
     cm<-fastgreedy.community(graph.incidence(MM))
     
@@ -622,11 +622,11 @@ SLAPE.coreComponents<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0){
         verdata<-match(verdata,PFP$pathway_id)
         verdata<- PFP$pathway_perc_fdr[verdata]
         if (length(dim(subData))>0){
-            names(verdata)<-PATHCOM_HUMAN$PATHWAY[as.numeric(colnames(subData))]
+            names(verdata)<-PATH_COLLECTION$PATHWAY[as.numeric(colnames(subData))]
             
             SLE.plotMyHeat(subData,100*rowSums(BEM[rownames(subData),])/ncol(BEM),verdata,filename=filen)
         }else{
-            names(verdata)<-PATHCOM_HUMAN$PATHWAY[as.numeric(intersect(elements,colnames(MM)))]
+            names(verdata)<-PATH_COLLECTION$PATHWAY[as.numeric(intersect(elements,colnames(MM)))]
             SLE.plotMyHeat(matrix(subData,length(subData),1,dimnames = list(names(subData),NULL)),100*rowSums(BEM[names(subData),])/ncol(BEM),verdata,
                            filename=filen)
         }

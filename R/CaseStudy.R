@@ -1,7 +1,7 @@
 #data("SLAPE.20140608_PATHCOM_HUMAN_nonredundant_intersection")
 load("data/SLAPE.all_genes_exonic_content_block_lengths_ensemble_20160209.RData")
 load('data/SLAPE.hgnc.table_20160210.Rdata')
-
+load('data/SLAPE.20160211_MSigDB_KEGG_updatedHGNC.RData')
 #updated.hgnc.table<-SLAPE.UpdateHGNC.Table()
 #save(updated.hgnc.table,file='data/SLAPE.hgnc.table_20160210.Rdata')
 
@@ -32,13 +32,17 @@ for (i in 1:nvariants){
 
 Dataset<-SLAPE.Check_and_fix_GS_Dataset(Dataset,updated.hgnc.table = updated.hgnc.table)
 
-PFPw<-SLAPE.Analyse(wBEM = Dataset,
+PFPw<-SLAPE.Analyse(wBEM = Dataset,PATH_COLLECTION = KEGG_PATH,
               show_progress = TRUE,
               NSAMPLES = 2,
               NGENES = 2,
               accExLength = TRUE,
               BACKGROUNDpopulation = rownames(Dataset))
 
-SLAPE.write.table(PFP = PFPw,BEM = Dataset,filename = "temp.results/tmp.csv",fdrth=5,exclcovth = 90)
-SLAPE.serialPathVis(BEM = Dataset,PFP = PFPw,fdrth = 5,exCovTh = 90,PATH = 'temp.results/')
-SLAPE.coreComponents(PFP = PFPw,BEM = Dataset,fdrth = 5,exclcovth = 90,filename = 'temp.results/core.components.pdf')
+SLAPE.write.table(PFP = PFPw,BEM = Dataset,filename = "temp.results/tmp.csv",fdrth=5,exclcovth = 0,PATH_COLLECTION = KEGG_PATH)
+
+SLAPE.serialPathVis(BEM = Dataset,PFP = PFPw,fdrth = 5,exCovTh = 0,PATH = 'temp.results/',PATH_COLLECTION = KEGG_PATH)
+
+
+SLAPE.coreComponents(PFP = PFPw,BEM = Dataset,fdrth = 5,exclcovth = 90,filename = 'temp.results/core.components.pdf',PATH_COLLECTION = KEGG_PATH)
+
