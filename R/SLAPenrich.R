@@ -176,8 +176,8 @@ SLAPE.readDataset<-function(filename){
     
     return(fc)
 }
-SLAPE.Check_and_fix_GS_Dataset<-function(Dataset){
-    checked_gs<-checkGeneSymbols(rownames(Dataset))    
+SLAPE.Check_and_fix_GS_Dataset<-function(Dataset,updated.hgnc.table){
+    checked_gs<-checkGeneSymbols(rownames(Dataset),hgnc.table = updated.hgnc.table)    
 
     non_approved_id<-which(checked_gs[,2]==FALSE)
     
@@ -202,7 +202,7 @@ SLAPE.Check_and_fix_GS_Dataset<-function(Dataset){
     return(Dataset)
 }
 
-SLAPE.Check_and_fix_PathwayCollection<-function(Pathways){
+SLAPE.Check_and_fix_PathwayCollection<-function(Pathways,updated.hgnc.table=updated.hgnc.table){
     
     np<-length(Pathways$PATHWAY)
     
@@ -210,7 +210,7 @@ SLAPE.Check_and_fix_PathwayCollection<-function(Pathways){
         print(paste('Checking pathway n.', i, ' (out of ',np,')',sep=''))
         currentGS<-Pathways$HGNC_SYMBOL[[i]]
         if (length(currentGS)>0){
-            checked_gs<-checkGeneSymbols(currentGS)    
+            checked_gs<-checkGeneSymbols(currentGS,hgnc.table = updated.hgnc.table)    
             non_approved_id<-which(checked_gs[,2]==FALSE)
             
             if (length(non_approved_id)>0){
@@ -228,12 +228,12 @@ SLAPE.Check_and_fix_PathwayCollection<-function(Pathways){
                 }
                 
                 currentGS[outdated_id]<-checked_gs[outdated_id,3]
-                currentGS<-setdiff(currentGS,currentGS[non_approved_id])
-                Pathways$HGNC_SYMBOL[[i]]<-currentGS
-                Pathways$Ngenes<-length(currentGS)
-                Pathways$Glengths<-
-                    GECOBLenghts[currentGS]
-            }    
+            }
+            currentGS<-setdiff(currentGS,currentGS[non_approved_id])
+            Pathways$HGNC_SYMBOL[[i]]<-intersect(currentGS,names(GECOBLenghts))
+            Pathways$Ngenes[i]<-length(currentGS)
+            Pathways$Glengths[[i]]<-
+                GECOBLenghts[currentGS]
         }
         
     }
@@ -262,16 +262,15 @@ SLAPE.Analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=
         cat('Sample fingerprinting for pathawy alterations (accounting for gene exonic length)...\n')
         gLenghts<-unlist(PATHCOM_HUMAN$Glengths)
         if(!length(BACKGROUNDpopulation)){
-            N<-sum(gLenghts[unique(names(gLenghts))],na.rm = TRUE)
+            N<-sum(GECOBLenghts[unique(names(gLenghts))],na.rm = TRUE)
         }else{
-            N<-sum(all_genes_exonic_lengths[unique(BACKGROUNDpopulation)])
+            N<-sum(GECOBLenghts[unique(BACKGROUNDpopulation)])
         }
     }else{
         cat('Sample fingerprinting for pathawy alterations...\n')
         if(!length(BACKGROUNDpopulation)){
-            N<-unlist(PATHCOM_HUMAN$Glengths)
-            N<-N[unique(names(N))]
-            N<-sum(N,na.rm = TRUE)
+            N<-unlist(PATHCOM_HUMAN$HGNC_SYMBOL)
+            N<-length(unique(N))
         }else{
             N<-length(BACKGROUNDpopulation)
         }
@@ -300,14 +299,15 @@ SLAPE.Analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=
         
         currentGeneSet<-intersect(PATHCOM_HUMAN$HGNC_SYMBOL[[i]],rownames(wBEM))
         
-        GLENGHTS<-PATHCOM_HUMAN$Glengths[[i]][currentGeneSet]
+        GLENGHTS<-
+            GECOBLenghts[currentGeneSet]
         
         if (length(which(!is.na(GLENGHTS)))==0 | length(currentGeneSet)<=NGENES){
             toExclude[i]<-TRUE
         }
         
         if(accExLength){
-            n <- sum(PATHCOM_HUMAN$Glengths[[i]][currentGeneSet],na.rm = TRUE)
+            n <- sum(GECOBLenghts[currentGeneSet],na.rm = TRUE)
         }else{
             n <-length(currentGeneSet)
         }
@@ -425,7 +425,12 @@ SLAPE.write.table<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0){
     
     NAMES<-str_replace_all(NAMES,',','//')
     
-    TOTexlength<-unlist(lapply(PATHCOM_HUMAN$Glengths[PFP$pathway_id],FUN = 'sum',na.rm=TRUE))
+    
+    TOTexlength<-rep(NA,length(NAMES))
+    
+    for (i in 1:length(NAMES)){
+        TOTexlength[i]<-sum(GECOBLenghts[PATHCOM_HUMAN$HGNC_SYMBOL[[PFP$pathway_id[i]]]])    
+    }
     
     np<-length(PFP$pathway_id)
     mutGenes<-rep('',length(np))
@@ -456,11 +461,17 @@ SLAPE.write.table<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0){
                   mutGenes,
                   PFP$pathway_Probability)
     
-    colnames(totres)<-c('Pathway','Internal Id','n.genes.in.rep',
-                        'total Exonic length',
+    colnames(totres)<-c('Pathway',
+                        'Internal Id',
+                        'n.genes.in.rep',
+                        'total Exonic Content Block length',
                         '(E)xpected n.mut in path',
-                        '(O)bserved n.mut in path','log10 (oddRatio=(O/E))',
-                        'pval','% FDR','ExclusiveCoverage','Mutated Genes',paste('prob ',colnames(PFP$pathway_Probability)))
+                        '(O)bserved n.mut in path',
+                        'log10 (oddRatio=(O/E))',
+                        'pval',
+                        '% FDR',
+                        'ExclusiveCoverage',
+                        'Mutated Genes',paste('prob ',colnames(PFP$pathway_Probability)))
     
     write.csv(totres,file=filename,quote=FALSE,row.names=FALSE)
 }
@@ -477,7 +488,8 @@ SLAPE.pathVis<-function(BEM,PFP,Id,i=NULL,PATH='./'){
     
     Pid<-which(PFP$pathway_id==Id)
     
-    toPlot<-SLE.HeuristicMutExSorting(toPlot)
+    toPlot<-
+        SLAPE.HeuristicMutExSorting(toPlot)
     
     FDR<-PFP$pathway_perc_fdr[which(PFP$pathway_id==Id)]
     
@@ -708,6 +720,61 @@ SLAPE.UpdateExonAttributes<-function(){
     
     print("DONE!")
     return(ExonAttributes)
+}
+SLAPE.UpdateHGNC.Table<-function(){
+    print('Downloading updated table from genaname.org')
+    day<-Sys.time()
+    day<-str_split(day,' ')[[1]][1]
+    fn<-paste('externalData/hgnc_complete_set_',day,'.txt',sep='')
+    download.file("ftp://ftp.ebi.ac.uk/pub/databases/genenames/new/tsv/hgnc_complete_set.txt",
+                  destfile = fn)
+    
+    fc <- file(fn)
+    mylist <- str_split(readLines(fc), "\t")
+    close(fc)
+    
+    mylist<-mylist[2:length(mylist)]
+    
+    ngenes<-length(mylist)
+    
+    flag<-TRUE
+    print('Updating HGNC table...')
+    pb<-txtProgressBar(min = 0, max = ngenes, initial = 0,style = 3)
+    
+    for (i in 1:ngenes){
+        setTxtProgressBar(pb,i)
+        if(length(grep('withdrawn',mylist[[i]]))==0){
+            currentApprovedSymbol<-mylist[[i]][2]
+            currentAlias<-mylist[[i]][9]
+            currentAlias<-setdiff(unlist(str_split(currentAlias,'"')),'')
+            currentAlias<-unlist(str_split(currentAlias,'[|]'))
+            
+            currentPrevSymbol<-mylist[[i]][11]
+            currentPrevSymbol<-setdiff(unlist(str_split(currentPrevSymbol,'"')),'')
+            currentPrevSymbol<-unlist(str_split(currentPrevSymbol,'[|]'))
+            
+            prevSymbAndAliases<-c(currentApprovedSymbol,currentAlias,currentPrevSymbol)
+            
+            currentChunk<-cbind(sort(prevSymbAndAliases),rep(currentApprovedSymbol,length(prevSymbAndAliases)))
+            
+            if(flag){
+                updated.hgnc.table<-currentChunk
+                flag<-FALSE
+                }else{
+                    updated.hgnc.table<-rbind(updated.hgnc.table,currentChunk)
+                    }
+            }
+        
+    }
+    close(pb)
+    print('DONE!')
+    
+    colnames(updated.hgnc.table)<-c("Symbol","Approved.Symbol")
+    rownames(updated.hgnc.table)<-as.character(1:nrow(updated.hgnc.table))
+    
+    
+    updated.hgnc.table<-data.frame(updated.hgnc.table)
+    return(updated.hgnc.table)
 }
 
 SLAPE.computeGeneExonContentBlockLengths<-function(ExonAttributes){

@@ -1,3 +1,14 @@
+#data("SLAPE.20140608_PATHCOM_HUMAN_nonredundant_intersection")
+load("data/SLAPE.all_genes_exonic_content_block_lengths_ensemble_20160209.RData")
+load('data/SLAPE.hgnc.table_20160210.Rdata')
+
+#updated.hgnc.table<-SLAPE.UpdateHGNC.Table()
+#save(updated.hgnc.table,file='data/SLAPE.hgnc.table_20160210.Rdata')
+
+#PATHCOM_HUMAN<-
+#    SLAPE.Check_and_fix_PathwayCollection(Pathways = PATHCOM_HUMAN,updated.hgnc.table = updated.hgnc.table)
+#save(PATHCOM_HUMAN,file='data/SLAPE.20140608_PATHCOM_HUMAN_nonredundant_intersection_hugoUpdated.RData')
+
 LungTSPvariants<-read.table('externalData/supplementary_table_2.txt',sep='\t',header=TRUE,stringsAsFactors = FALSE)
 
 GeneIds<-unique(LungTSPvariants$HUGO.Symbol)
@@ -18,14 +29,8 @@ for (i in 1:nvariants){
     }
 }
 
-Dataset<-SLAPE.Check_and_fix_GS_Dataset(Dataset)
 
-#library(SLAPenrich)
-data("SLAPE.20140608_PATHCOM_HUMAN_nonredundant_intersection")
-load("data/SLAPE.all_genes_exonic_content_block_lengths_ensemble_20160209.RData")
-
-PATHCOM_HUMAN<-
-    SLAPE.Check_and_fix_PathwayCollection(Pathways = PATHCOM_HUMAN)
+Dataset<-SLAPE.Check_and_fix_GS_Dataset(Dataset,updated.hgnc.table = updated.hgnc.table)
 
 PFPw<-SLAPE.Analyse(wBEM = Dataset,
               show_progress = TRUE,
@@ -34,4 +39,6 @@ PFPw<-SLAPE.Analyse(wBEM = Dataset,
               accExLength = TRUE,
               BACKGROUNDpopulation = rownames(Dataset))
 
-SLAPE.write.table(PFPw,Dataset,"tmp.txt",fdrth=5,0)
+SLAPE.write.table(PFP = PFPw,BEM = Dataset,filename = "tmp.csv",fdrth=5,exclcovth = 90)
+SLAPE.serialPathVis(BEM = Dataset,PFP = PFPw,fdrth = 5,exCovTh = 90)
+
