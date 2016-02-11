@@ -44,5 +44,5 @@ SLAPE.write.table(PFP = PFPw,BEM = Dataset,filename = "temp.results/tmp.csv",fdr
 SLAPE.serialPathVis(BEM = Dataset,PFP = PFPw,fdrth = 5,exCovTh = 0,PATH = 'temp.results/',PATH_COLLECTION = KEGG_PATH)
 
 
-SLAPE.coreComponents(PFP = PFPw,BEM = Dataset,fdrth = 5,exclcovth = 90,filename = 'temp.results/core.components.pdf',PATH_COLLECTION = KEGG_PATH)
+SLAPE.coreComponents(PFP = PFPw,BEM = Dataset,fdrth = 5,exclcovth = 0,filename = 'temp.results/core.components.pdf',PATH_COLLECTION = KEGG_PATH)
 
