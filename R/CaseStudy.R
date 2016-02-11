@@ -39,6 +39,6 @@ PFPw<-SLAPE.Analyse(wBEM = Dataset,
               accExLength = TRUE,
               BACKGROUNDpopulation = rownames(Dataset))
 
-SLAPE.write.table(PFP = PFPw,BEM = Dataset,filename = "tmp.csv",fdrth=5,exclcovth = 90)
-SLAPE.serialPathVis(BEM = Dataset,PFP = PFPw,fdrth = 5,exCovTh = 90)
-
+SLAPE.write.table(PFP = PFPw,BEM = Dataset,filename = "temp.results/tmp.csv",fdrth=5,exclcovth = 90)
+SLAPE.serialPathVis(BEM = Dataset,PFP = PFPw,fdrth = 5,exCovTh = 90,PATH = 'temp.results/')
+SLAPE.coreComponents(PFP = PFPw,BEM = Dataset,fdrth = 5,exclcovth = 90,filename = 'temp.results/core.components.pdf')

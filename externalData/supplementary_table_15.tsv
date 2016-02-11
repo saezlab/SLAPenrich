@@ -1,0 +1,189 @@
+id	TSP_Patient_ID	TSP_Tumor_DNA_ID	WGA_QA	Seq_Plate	TSP_Normal_DNA_ID	Normal_DNA_Source	Age_at_DX	Race	Gender	Smoking_Status	PackYears	Years_Quit	Site	Max_Size	T_Stage	N_Stage	M_Stage	Stage	Path_Review	Pathology_DX	Grade	Acinar	Papillary	Micropapillary	BAC	BAC_Type	Solid	Colloid	Clear_Cell	Signet_Ring	Frozen_Concordant	Frozen_Comment	Frozen_Acinar	Frozen_Papillary	Frozen_Micropapillary	Frozen_BAC	Frozen_Solid	Percent_Tumor	TiedMajSubtype	MajorSubtype	MajAcinarvsOther	MajPapvsOther	MajBACvsOther	MajSolidvOther
+16530	21358	16530		2	16552	Lung	50-59		M						2	1		2B	Local		1																		99	99	99	99	99	99
+16594	21435	16594		1	16593	Lung	70-79		F	F	11-20	30			2	0	0	1B	Central	Adeno	3	90	0	0	0		10	0	0	0	N		Y						0	1	1	0	0	0
+16596	21436	16596		1	16595	Lung	50-59		F	C	21-30				1	0	0	1A	Central	Adeno	1	50	21-40	0	20	NonMuc	0	0	0	0	Y								0	1	1	0	0	0
+16600	21438	16600		1	16599	Lung	60-69		M	F	>100	5			2	>1	0	3A	Central	Adeno	2	40	41-60	10	0		5	0	0	0	N					Y			0	2	0	1	0	0
+16606	21441	16606		1	16605	Lung	50-59		M	N					2	0	0	1B	Central	Adeno	2	50	41-60	0	0		0	0	0	0	N							0	1	2	0	1	0	0
+16608	21442	16608		1	16607	Lung	50-59		M	C	21-30	0			4	0	0	3B	Central	Adeno	3	0	21-40	10	0		70	0	0	0	N			Y	Y				0	4	0	0	0	1
+16612	21444	16612		2	16611	Lung	50-59		F	C	39722				1	1	0	2B	Central	Adeno	2	50	41-60	20	0		0	0	0	0	Y		Y	Y					1	2	0	1	0	0
+16614	21445	16614		2	16613	Lung	60-69		M	F	21-30	5			1	0	0	1A	Central	Adeno	2	40	41-60	30	0		0	0	0	0	Y								0	2	0	1	0	0
+16616	21446	16616		2	16615	Lung	70-79		M	F	>100	5			1	0	0	1A	Central	Adeno	1	50	41-60	0	0		0	0	0	0	Y		Y	Y					1	2	0	1	0	0
+16626	21451	16626		1	16625	Lung	60-69		F	F	11-20	30			2	0	0	1A	Central	Adeno	3	10	0	0	0		90	0	41-60	0	Y		Y	Y					0	4	0	0	0	1
+16628	21452	16628		1	16627	Lung	60-69		M	F	71-80	1			2	0	0	1B	Central	Adeno	3	10	1-20	5	0		70	0	0	0	N			Y			Y		0	4	0	0	0	1
+16630	21453	16630		1	16629	Lung	60-69		F	C	41-50				1	0	0	1A	Central	Adeno	1	5	1-20	0	90	NonMuc	0	0	0	0	N					Y			0	3	0	0	1	0
+16632	21454	16632		1	16631	Lung	50-59		M	C	31-40	0			2	0	0	1B	Central	Adeno	2	40	41-60	10	0		10	0	0	0	N		Y	Y					0	2	0	1	0	0
+16636	21456	16636		2	16635	Lung	60-69		F	F	31-40	10			1	0	0	1A	Central	Adeno	3	40	21-40	0	0		20	0	0	0	Y		Y	Y			Y		1	1	1	0	0	0
+16638	21457	16638		1	16637	Lung	70-79		M	N					1	0	0	1A	Central	Adeno	2	40	41-60	10	5	NonMuc	0	0	0	0	N		Y	Y					0	2	0	1	0	0
+16640	21458	16640		2	16639	Lung	50-59		F	F	39722	20			1	0	0	1A	Central	Adeno	1	30	61-80	0	0		0	0	0	0	Y		Y	Y					0	2	0	1	0	0
+16646	21461	16646		1	16645	Lung	70-79		M	N					1	0	0	1A	Central	Adeno	2	50	21-40	0	20	NonMuc	0	0	0	0	N		Y	Y					0	1	1	0	0	0
+16648	21462	16648		1	16647	Lung	70-79		M	F	41-50	10			2	1	0	2B	Central	Adeno	3	30	1-20	5	0		10	41-60	0	5	N		Y	Y					0	1	1	0	0	0
+16660	21468	16660		2	16659	Lung	70-79		F	F	41-50	10			2	0	0	1B	Central	Adeno	3	50	21-40	5	0		20	0	0	0	Y								0	1	1	0	0	0
+16664	21470	16664		2	16663	Lung	80-89		F	C	21-30				2	1	0	2B	Central	Adeno	2	50	41-60	5	0		0	0	0	0	Y		Y	Y	Y				1	2	0	1	0	0
+16668	21472	16668		1	16667	Lung	60-69		M	F	31-40	1			2	1	1	4	Central	Adeno	3	10	1-20	0	0			0	61-80	0	Y								0	4	0	0	0	1
+16670	21473	16670		1	16669	Lung	60-69		F	C	41-50	0			1	1	0	2A	Central	Adeno	3	0	0	0	0		100	0	0	50	Y						Y		0	4	0	0	0	1
+16674	24175	16674		1	16673	Lung	60-69		F	C	91-100	0							Central	Adeno	3	30	1-20	0	0		50	0	0	0	N		Y				Y		0	4	0	0	0	1
+16678	24177	16678		1	16677	Lung	70-79		F	F	>100	5			2	0	0	1B	Central	Adeno	3	80	0	0	0		20	0	0	0	Y		Y				Y		0	1	1	0	0	0
+16684	24180	16684		2	16683	Lung	70-79		M	F	39722	20			4	0	0	1B	Central	Adeno	2	80	1-20	0	0		0	0	0	0	Y								0	1	1	0	0	0
+16686	24181	16686		2	16685	Lung	60-69		F	C	21-30				4	0	0	3B	Central	Adeno	3	10	0	0	0		90	0	0	0	Y		Y				Y		0	4	0	0	0	1
+16688	24182	16688		2	16687	Lung	60-69		F	C	11-20				2	>1	0	3A	Central	Adeno	3	20	21-40	0	0		40	0	0	10	Y		Y	Y			Y		1	4	0	0	0	1
+16696	24186	16696		1	16695	Lung	80-89		F	N					2	0	0	1B	Central	Adeno	2	10	61-80	10	20	NonMuc	0	0	0	0	N		Y	Y	Y				0	2	0	1	0	0
+16698	24187	16698		1	16697	Lung	50-59		F	F	39722				2	0	0	1B	Central	Adeno	2	20	61-80	10	10	NonMuc	0	0	0	0	Y		Y	Y	Y				0	2	0	1	0	0
+16706	24191	16706		2	16705	Lung	70-79		M	F					1	0	0	1A	Central	Adeno	2	50	41-60	0	0		0	0	0	0	Y								1	1	1	0	0	0
+16710	24193	16710		1	16709	Lung	50-59		F	F	39722	5			1	0	0	1A	Central	Adeno	2	40	41-60	5	10	NonMuc	0	0	0	0	N		Y	Y	Y				0	2	0	1	0	0
+16712	24194	16712		1	16711	Lung	70-79		F	F	11-20	5			1	0	0	1A	Central	Adeno	2	40	41-60	5	5	NonMuc	5	0	0	0	N		Y	Y					0	2	0	1	0	0
+16720	24198	16720		2	16719	Lung	70-79		F	C					3	0	0	2B	Central	Adeno	3	10	1-20	0	0		80	0	0	0	Y		Y	Y			Y		0	4	0	0	0	1
+16722	24199	16722		2	16721	Lung	70-79		F	F	51-60	20			2	0	0	1B	Central	Adeno	3	20	21-40	0	0		40	0	0	0	Y								1	4	0	0	0	1
+16724	24200	16724		1	16723	Lung	70-79		M	F					1	1	0	2A	Central	Adeno	2	10	81-100	5	5	NonMuc	0	0	0	0	N			Y	Y				0	2	0	1	0	0
+16730	24203	16730		2	16729	Lung	40-49		F	C					2	0	0	1B	Central	Adeno	3	5	0	0	0		95	0	21-40	0	Y						Y		0	4	0	0	0	1
+16734	24205	16734		1	16733	Lung	80-89		F	F					1	0	0	1A	Central	Adeno	2	20	61-80	10	0		10	0	0	0	N		Y	Y					0	2	0	1	0	0
+16740	24208	16740		1	16739	Lung	50-59		F	N					2	>1	0	3A	Central	Adeno	2	40	21-40	5	0		30	0	0	0	N		Y				Y		0	1	1	0	0	0
+16742	24209	16742		1	16741	Lung	80-89		F	N					1	0	0	1A	Central	Adeno	3	20	41-60	5	5	NonMuc	30	0	0	0	N		Y	Y	Y				0	2	0	1	0	0
+16746	24211	16746		2	16745	Lung	60-69		F	C					2	1	0	2B	Central	Adeno	3	0	1-20	0	0		90	0	0	0	Y			Y			Y		0	4	0	0	0	1
+16748	24212	16748		1	16747	Lung	60-69		F	F					1	>1	0	3A	Central	Adeno	2	40	41-60	0	0		5	21-40	0	0	Y		Y	Y					0	2	0	1	0	0
+16750	24213	16750		1	16749	Lung	60-69		M	C					2	1	0	2B	Central	Adeno	2	30	61-80	20	0		0	21-40	21-40	0	Y		Y	Y					0	2	0	1	0	0
+16754	24215	16754		1	16753	Lung	80-89		F	F					1	0	0	1A	Central	Adeno	3	20	21-40	10	30	NonMuc	10	0	0	0	N		Y	Y					0	2	0	1	0	0
+16758	24217	16758		2	16757	Lung	60-69		M	C					2	0	0	1B	Central	Adeno	3	20	41-60	0	0		30	0	1-20	0	Y		Y	Y			Y		0	2	0	1	0	0
+16760	24218	16760		1	16759	Lung	50-59		F	C	39722	0			1	0	0	1A	Central	Adeno	3	60	1-20	5	5	NonMuc	20	0	0	0	N		Y	Y					0	1	1	0	0	0
+16766	24221	16766		1	16765	Lung	80-89		M	F					2	0	0	1B	Central	Adeno	2	10	61-80	5	10	NonMuc	0	0	0	0	N		Y	Y					0	2	0	1	0	0
+16768	24222	16768		1	16767	Lung	60-69		F	F					2	1	0	2B	Central	Adeno	2	20	61-80	10	0		10	0	1-20	0	Y		Y	Y					0	2	0	1	0	0
+16770	24223	16770		1	16769	Lung	70-79		M	F					1	0	0	1A	Central	Adeno	2	30	41-60	20	20	NonMuc	0	0	0	0	Y		Y	Y	Y	Y			0	2	0	1	0	0
+16772	24224	16772		1	16771	Lung	70-79		M	F					1	0	0	1A	Central	Adeno	2	40	41-60	20	0		0	0	0	0	Y		Y	Y	Y				0	2	0	1	0	0
+16774	24225	16774		1	16773	Lung	60-69		F	N					1	0	0	1A	Central	Adeno	2	30	41-60	0	10	NonMuc	0	0	0	0	N		Y						0	2	0	1	0	0
+16780	24228	16780		1	16779	Lung	70-79		M	F					1	0	0	1A	Central	Adeno	2	40	41-60	10	0		0	0	0	0	N		Y	Y					0	2	0	1	0	0
+16784	24230	16784		1	16783	Lung	80-89		M	F	39722	40			1	0	0	1A	Central	Adeno	3	40	41-60	20	0		10	0	0	0	N		Y		Y		Y		0	2	0	1	0	0
+16786	24231	16786		1	16785	Lung	70-79		F	F									Central	Adeno	1	10	41-60	5	30	NonMuc	0	0	0	0	Y			Y					0	2	0	1	0	0
+16792	24234	16792		2	16791	Lung	60-69		F	F					1	0	0		Central	Adeno	2	30	61-80	10	0		0	0	0	0	Y		Y	Y					0	2	0	1	0	0
+16800	24238	16800		1	16799	Lung	60-69		F	F					1	1	0	2A	Central	Adeno	2	40	41-60	10	0		0	0	1-20	0	N			Y	Y				0	2	0	1	0	0
+16802	24239	16802		1	16801	Lung	60-69		F	C					1	1	0	2A	Central	Adeno	3	10	21-40	10	0		40	0	0	0	Y		Y	Y			Y		0	2	0	1	0	0
+16804	24240	16804		2	16803	Lung	70-79		M	F					2	0	0	1B	Central	Adeno	2	10	81-100	5	5	Muc	0	0	0	0	Y		Y	Y		Y			0	2	0	1	0	0
+16810	24243	16810		2	16809	Lung	50-59		F	F					2	0	0	1B	Central	Adeno	2	50	41-60	10	0		0	0	0	0	Y		Y	Y	Y				1	1	1	0	0	0
+16814	24245	16814		1	16813	Lung	40-49		F	C	21-30				1	0	0	1A	Central	Adeno	3	70	1-20	0	0		10	0	0	0	Y								0	2	0	1	0	0
+16821	24249	16821		2	16822	Lung	60-69	W	M	C	31-40				2	0	0	1	Central													Adeno	Y				Y	80	99	9	99	99	99	99
+16823	24250	16823		2	16824	Lung	50-59	W	M	C	31-40				1	1		2	Central	Adeno	2	30	61-80	10	5	NonMuc	0	0	0	0	N	Adeno	Y	Y				<80	0	2	0	1	0	0
+16825	24251	16825		2	16826	Lung	60-69	W	M	F	11-20				1	0	0	1	Central	Adeno	1	20	0	0	80	Muc	0	0	0	0	Y	Adeno				Y		100	0	3	0	0	1	0
+16827	24252	16827		1	16828	Lung	70-79	W	M	C	11-20				1	0		1	Central		3	10	1-20	5	0		70	0	1-20	0	Y	Adeno	Y	Y			Y	<80	0	4	0	0	0	1
+16835	24256	16835		1	16836	Lung	50-59	W	F						2	0	0	1B	Central	Adeno	3	40	21-40	0	0		20	0	1-20	0	Y	Adeno	Y	Y			Y	80	1	1	1	0	0	0
+16839	24258	16839		2	16840	Lung	70-79	W	M	F	31-40				2	0	0	1B	Central	Adeno	3	5	1-20	0	0		80	0	0	0	Y	Adeno	Y	Y			Y	90	0	4	0	0	0	1
+16841	24259	16841		1	16842	Lung	60-69	W	F	N					2	0		1B	Central	Adeno	3	50	21-40	10	5	NonMuc	5	0	1-20	0	N	Adeno	Y	Y	Y			80	0	1	1	0	0	0
+16845	24261	16845		2	16846	Lung	50-59	W	M	F	11-20				1	>1	0	3A	Central	Adeno	3	20	1-20		0		80	0	1-20	0	Y	Adeno	Y				Y	90	0	4	0	0	0	1
+16857	24267	16857		2	16858	Lung	50-59	W	F	C	21-30				1	0	0	1A	Central	Adeno	2	40	41-60	5	0		0	0	0	0	Y	Adeno	Y	Y				80	0	2	0	1	0	0
+16859	24268	16859		1	16860	Lung	60-69	W	F	F	51-60				4	0			Central	Adeno	2	60	21-40	0	10							Adeno	Y	Y	Y			80	0	1	1	0	0	0
+16861	24269	16861		2	16862	Lung	70-79	W	M										Central																			<80	99	9	99	99	99	99
+16863	24270	16863		1	16864	Lung	70-79	AA	F	F	41-50				2	0	0	1B	Central		3	5	0	0	0		95	0	0	0	Y	Adeno						100	0	4	0	0	0	1
+16875	24276	16875		1	16876	Lung	60-69	W	F						1	0			Central	Adeno	3	20	61-80	10	0		5	0	0	0	Y	Adeno	Y	Y			Y	80	0	2	0	1	0	0
+16879	24278	16879		1	16880	Lung	70-79	W	M	F					2	0		1B	Central	Adeno	2	10	81-100	10	0		0	0	0	0	Y	Adeno		Y	Y			80	0	2	0	1	0	0
+16881	24279	16881		2	16882	Lung	70-79	W	F						1	0		1A	Central	Adeno	2	50	41-60	10	0		0	0	0	0	Y	Adeno	Y	Y				<80	1	2	0	1	0	0
+16883	24280	16883		1	16884	Lung	40-49	AA	F	C	21-30				4	1	0	3B	Central													Adeno	Y	Y			Y	80	99	9	99	99	99	99
+16889	24283	16889		2	16890	Lung	60-69	W	F	N					1	0			Central																			90	99	9	99	99	99	99
+16901	24289	16901		1	16902	Lung	60-69	AA	M	C	61-70				2	1	0	2B	Central													Adeno	Y	Y	Y			<80	99	9	99	99	99	99
+16905	24291	16905		2	16906	Lung	70-79	W	M	F					2	0			Central	Adeno	2	60	21-40	0	5	NonMuc	0	0	0	0	N	Adeno	Y	Y				<80	0	1	1	0	0	0
+16907	24292	16907		2	16908	Lung	70-79	W	F	F	31-40				2	0		1B	Central	Adeno	3	40	1-20	0	0		50	0	0	0	Y	Adeno	Y	Y			Y	80	0	4	0	0	0	1
+16909	24293	16909		1	16910	Lung	60-69	W	M	F	31-40				2	0		1B	Central	Adeno	2	60	21-40	5	0		0	0	0	0	Y	Adeno	Y	Y				90	0	1	1	0	0	0
+16913	24295	16913		2	16914	Lung	60-69	W	M	F	21-30				2	0		1B	Central	Adeno	3	60	1-20	0	10	NonMuc	10	0	0	0	N	Adeno	Y	Y				<80	0	1	1	0	0	0
+16915	24296	16915		2	16916	Lung	70-79	W	F						2	1	0	2A	Central	Adeno	2	30	61-80	20	0		0	0	0	0	Y	Adeno	Y	Y				80	0	2	0	1	0	0
+16917	24297	16917		2	16918	Lung	60-69	W	F	F					1	0		1A	Central	Adeno	2	50	41-60	20	0		0	0	0	0	Y	Adeno	Y	Y				<80	1	2	0	1	0	0
+16919	24298	16919		2	16920	Lung	60-69	W	F	C					2	0		1B	Central	Adeno	2	60	21-40	5	0		0	0	0	0	Y	Adeno	Y	Y	Y			90	0	1	1	0	0	0
+16921	24299	16921		1	16922	Lung	70-79	W	M	F	51-60				4	0		3B	Central	Adeno	3	30	21-40	0	5	NonMuc	30	0	0	0	N	Adeno	Y	Y				<80	0	2	0	1	0	0
+16925	24301	16925		1	16926	Lung	70-79	W	F	N					2	0		1B	Central	Adeno	2	50	1-20	0	30	NonMuc	0	0	0	0	N	Adeno	Y	Y				80	0	1	1	0	0	0
+16927	24302	16927		2	16928	Lung	70-79	W	F						2	1		2B	Central	Adeno	3	60	0	0	0		40	0	0	0	N	Adeno	Y	Y			Y	80	0	1	1	0	0	0
+16929	24303	16929		2	16930	Lung	70-79	W	M						2	1		2B	Central	Adeno	2	10	61-80	20	20	Muc	0	0	0	0	Y	Adeno	Y	Y		Y		90	0	2	0	1	0	0
+16937	24312	16937		2	16938	Lung	50-59	AA	F	C	21-30				1	1			Central													Adeno	Y	Y				90	99	9	99	99	99	99
+16947	24317	16947		1	16948	Lung	50-59	W	F	F	31-40				3	0			Central	Adeno	3	60	0	0	0		40	0	0	0	Y	Adeno	Y				Y	90	0	1	1	0	0	0
+16949	24318	16949		1	16950	Lung	70-79	W	M	F	31-40				4	0	0	3B	Central	Adeno	2	20	61-80	30	10	Mixed	0	0	1-20	0	N	Adeno	Y	Y				90	0	2	0	1	0	0
+16951	24319	16951		1	16952	Lung	40-49	W	F						3	0	0	2B	Central	Adeno	3	5	0	0	0		95	0	0	0		Adeno	Y				Y	90	0	4	0	0	0	1
+16953	24320	16953		1	16954	Lung	40-49	W	M						3	>1			Central													Adeno	Y	Y			Y	90	99	9	99	99	99	99
+16963	24325	16963		1	16964	Lung	80-89	W	F	N					2	0	0	1B	Central	Adeno	2	40	41-60	0	10	NonMuc	0	0	0	0	Y	Adeno	Y	Y		Y		<80	0	2	0	1	0	0
+16965	24326	16965		1	16966	Lung	70-79	W	F						2	1		2B	Central	Adeno	3	30	41-60	20	0		20	0	0	0	Y	Adeno	Y	Y			Y	<80	0	2	0	1	0	0
+16973	24330	16973		1	16974	Lung	80-89	W	F						1	0	0	1A	Central	Adeno	2	10	41-60	0	30	NonMuc	0	0	0	0	Y	Adeno	Y	Y		Y		80	0	2	0	1	0	0
+16975	24331	16975		1	16976	Lung	70-79	W	F	C	71-80				2	1		2B	Central	Adeno	2	10	81-100	10	0		0	0	0	0	Y	Adeno	Y	Y				80	0	2	0	1	0	0
+16979	24333	16979		1	16980	Lung	60-69		F						2	0		1B	Central	Adeno	2	30	61-80	0	0		0	0	0	0	Y	Adeno	Y	Y				95	0	2	0	1	0	0
+16993	24340	16993		1	16994	Lung	<40	AA	F	N					2	0	1	4	Central													Adeno	Y	Y	Y			90	99	9	99	99	99	99
+16997	24342	16997		1	16998	Lung	40-49	W	M	N					2	>1		3A	Central	Adeno	2	30	61-80	10	0		0	0	0	0	Y	Adeno	Y	Y	Y			90	0	2	0	1	0	0
+17042	24468	17042		1	17071	PBL	60-69		M	C	41-50				2	1	0	2	Central	Adeno	2	30	61-80	10	5	NonMuc	0	0	0	0									0	2	0	1	0	0
+17054	24480	17054		1	17083	PBL	80-89		F	F	11-20				2	>1	0	3A	Central	Adeno	3	40	41-60	30	0		10	0	0	0									0	2	0	1	0	0
+17055	24481	17055		1	17084	PBL	60-69		F	C	61-70				3	1	0	3A	Central	Adeno	3	40	21-40	20	0		30	0	1-20	0									0	1	1	0	0	0
+17060	24486	17060		2	17089	PBL	60-69		F	C	11-20				2	>1	0	3A	Central	Adeno	3	5	0	0	0		95	0	0	0									0	4	0	0	0	1
+17144	24575	17144		2	17143	Lung	70-79		F	F		40	RUL	2.5	1	0			Central	Adeno	1	80	1-20	5	5	Muc	0			0	Y								0	1	1	0	0	0
+17146	24576	17146		2	17145	Lung	70-79		F	C	41-50	1	LLL	3.5	2	0			Central	Adeno	1	30	41-60	10	10	Muc	0			0	Y								0	2	0	1	0	0
+17148	24577	17148		1	17147	Lung	80-89		F	N			LUL	2.5	1	0			Central	Adeno	1	10	1-20	0	90	Muc	0			0	Y								0	4	0	0	0	1
+17150	24578	17150		2	17149	Lung	50-59		F	N			RLL	9	2	0			Central	Adeno	2	80	1-20	0	10	NonMuc	0			5	Y								0	1	1	0	0	0
+17152	24579	17152		1	17151	Lung	60-69		F	C	31-40	1	RUL	1.5	1	0			Central	Adeno	2	20	41-60	0	30	Muc	0			0	Y								0	2	0	1	0	0
+17154	24580	17154		2	17153	Lung	50-59		F	F	31-40	20	RML	2.5	1	0			Central	Adeno	1	80	1-20	0	10	Muc	0			0	Y								0	1	1	0	0	0
+17156	24581	17156		2	17155	Lung	50-59		M	F	51-60	5	RUL	6	4	0			Central	Adeno	3	5	0	0	0		95			0	Y								0	4	0	0	0	1
+17158	24582	17158		2	17157	Lung	60-69		F	F	11-20	10	RUL	3	1	0			Central	Adeno	1	0	1-20	5	80	Muc	0			0	Y								0	3	0	0	1	0
+17170	24597	17170		2	17169	Lung	60-69		F	F	39722	5	RUL	6	2	0			Central	Adeno	3	10	0	0	0		90			0	Y								0	4	0	0	0	1
+17172	24598	17172		1	17171	Lung	60-69		F	N			LLL	5	2	0			Central	Adeno	2	60	21-40	5	0		5			0	Y								0	1	1	0	0	0
+17174	24599	17174		1	17173	Lung	60-69		F	F	41-50	5	LLL	7.5	2	0			Central	Adeno	2	100	0	0	0		0			0	Y								0	1	1	0	0	0
+17176	24600	17176		2	17175	Lung	40-49		F	C	51-60		LUL	5	2	0			Central	Adeno	3	10	1-20	0	0		80			0	Y								0	4	0	0	0	1
+17182	24603	17182		1	17181	Lung	80-89		F	F			RUL	2.5	1	0			Central	Adeno	1	10	61-80	20	20	Muc	0			0	Y								0	2	0	1	0	0
+17184	24604	17184		2	17183	Lung	70-79		F	F	39722	40	RLL	3.5	2	0			Central	Adeno	1	0	81-100	10	10	Muc	5			0	Y								0	2	0	1	0	0
+17186	24605	17186		2	17185	Lung	60-69		F	F			L	5.5	3	1			Central	Adeno	2	80	1-20	10	0		5			0	Y								0	1	1	0	0	0
+17190	24607	17190		2	17189	Lung	70-79		M	F	41-50	5	LUL	7.5	3	>1			Central	Adeno	3	20	0	0	0		80			10	Y								0	4	0	0	0	1
+17194	24609	17194		2	17193	Lung	60-69		M	C	21-30	5	L	3	1	>1			Central	Adeno	3	50	21-40	0	0		10			5	Y								0	1	1	0	0	0
+17202	24613	17202		1	17201	Lung	70-79		M	F	11-20	30	RLL	4.5	2	>1			Central	Adeno	2	30	61-80	20	0		0			0	Y								0	2	0	1	0	0
+17206	24615	17206		2	17205	Lung	70-79		F	F	39722	10	RLL	3.5	1	>1			Central	Adeno	3	30	0	0	0		70			0	Y								0	4	0	0	0	1
+17208	24616	17208		2	17207	Lung	80-89		M	F	39722	40	LLL	4	2	0			Central	Adeno	2	90	1-20	0	0		0			0	Y								0	1	1	0	0	0
+17210	24617	17210		1	17209	Lung	60-69		M	F	81-90	10	LLL	4	2	0			Central	Adeno	3	0	21-40	5	0		60			0	Y								0	4	0	0	0	1
+17216	24620	17216		2	17215	Lung	70-79		M	F	31-40	5	LLL	10	2	0			Central	Adeno	2	20	41-60	5	30	NonMuc	0			0	Y								0	2	0	1	0	0
+17218	24621	17218		1	17217	Lung	50-59		M		>100		RUL	6.5	2	0			Central	Adeno	3	5	0	0	0		100			0	N								0	4	0	0	0	1
+17222	24623	17222		2	17221	Lung	70-79		M	F	>100	1	RUL	3	1	0			Central	Adeno	3	30	1-20	10	0		50			0	Y								0	4	0	0	0	1
+17226	24625	17226		2	17225	Lung	50-59		M	C	71-80		RUL	2	1	0			Central	Adeno	2	60	21-40	20	0		5			0	Y								0	1	1	0	0	0
+17228	24626	17228		2	17227	Lung	60-69		F	C	31-40	1	LUL	2	1	0			Central	Adeno	1	40	21-40	10	30	Muc	0			0	Y								0	1	1	0	0	0
+17234	24629	17234		2	17233	Lung	60-69		F	F	11-20	20	LUL	3	1	0			Central	Adeno	2	20	61-80	5	0		0			5	Y								0	2	0	1	0	0
+17238	24631	17238		2	17237	Lung	70-79		F				LLL	5	2	0			Central	Adeno	2	0	81-100	40	0		0			0	Y								0	2	0	1	0	0
+17240	24632	17240		2	17239	Lung	50-59		F	F		40	LUL	4	2	1			Central	Adeno	2	50	21-40	5	0		10			0	N								0	1	1	0	0	0
+17242	24633	17242		2	17241	Lung	70-79		M	F	91-100	10	LUL	2	1	0			Central	Adeno	3	40	21-40	5	0		10			0	Y								0	1	1	0	0	0
+17248	24636	17248		2	17247	Lung	50-59		F				LUL	3.5	2	0			Central	Adeno	2	70	21-40	5	0		0			0	Y								0	1	1	0	0	0
+17250	24637	17250		2	17249	Lung	60-69		F	F			LUL	3	1	0			Central	Adeno	1	10	1-20	10	70	Muc	0			0	Y								0	3	0	0	1	0
+17252	24648	17252		2	17251	Lung	60-69		M	F			RUL	3	2	0			Central	Adeno	3	20	1-20	5	0		60			20	Y								0	4	0	0	0	1
+17258	24651	17258		2	17257	Lung	50-59		F	F		1	RLL	2	1	0			Central	Adeno	2	90	1-20	0	0		0			0	Y								0	1	1	0	0	0
+17260	24652	17260		2	17259	Lung	40-49		F	N			LLL	2	1	0			Central	Adeno	3	70	0	0	0		30			0	Y								0	1	1	0	0	0
+17262	24653	17262		1	17261	Lung	40-49		F	F			RUL	2	1	0			Central	Adeno	3	80	0	0	0		20			0	Y								0	1	1	0	0	0
+17264	24654	17264		2	17263	Lung	40-49		F	F	39722	1	RUL	3	1	0			Central	Adeno	2	60	21-40	10	0		0			0	Y								0	1	1	0	0	0
+17268	24656	17268		2	17267	Lung	60-69		M	F	21-30	20	LLL	3	1	>1			Central	Adeno	2	20	61-80	20	0		0			0	Y								0	2	0	1	0	0
+17272	24658	17272		2	17271	Lung	60-69		F	F	41-50	20	LUL	3	1	0			Central	Adeno	1	60	21-40	10	0		0			0	N								0	1	1	0	0	0
+17280	24662	17280		2	17279	Lung	50-59		M	F			L	4	2	>1			Central	Adeno	2	70	1-20	5	0		20			0	Y								0	1	1	0	0	0
+17282	24663	17282		1	17281	Lung	50-59		F	F	11-20	10	RLL	3	1	0			Central	Adeno	2	80	1-20	0	0		5			0	Y								0	1	1	0	0	0
+17286	24665	17286		2	17285	Lung	60-69		F	C	21-30		RUL	3.5	2	0			Central	Adeno	3	30	21-40	10	0		40			0	Y								0	4	0	0	0	1
+17288	24666	17288		2	17287	Lung	80-89		F	F		40	R	1.5	1	0			Central	Adeno	2	60	21-40	5	10	Muc	0			30	N								0	1	1	0	0	0
+17290	24667	17290		2	17289	Lung	60-69		F	F	71-80	10	RLL	2.5	1	1			Central	Adeno	2	20	41-60	20	10	Mixed	0			0	Y								0	2	0	1	0	0
+17292	24668	17292		2	17291	Lung	50-59		M	F	>100	1	RLL	6	2	1			Central	Adeno	2	30	61-80	20	0		0			0	Y								0	2	0	1	0	0
+17294	24669	17294		2	17293	Lung	80-89		M	F		10	LLL	2.5	1	0			Central	Adeno	3	60	1-20	0	0		30			0	Y								0	1	1	0	0	0
+17298	24678	17298		1	17297	Lung	80-89		F	N			LUL	3.5	2	1			Central	Adeno	2	40	41-60	10	0		10			0	N								0	2	0	1	0	0
+17302	24680	17302		1	17301	Lung	70-79		F	N			LUL	2	1	0			Central	Adeno	2	40	41-60	10	0		0			20	N								0	2	0	1	0	0
+17304	24681	17304		2	17303	Lung	60-69		F	F		1	LUL	2	1	1			Central	Adeno	3	30	21-40	5	0		40			0	Y								0	4	0	0	0	1
+17306	24682	17306		1	17305	Lung	60-69		F	F	41-50	5	RUL	2.5	1	0			Central	Adeno	3	20	21-40	30	0		40			0	Y								1	2	0	1	0	0
+17308	24683	17308		2	17307	Lung	60-69		M	F	71-80		LLL	3.5	2	1			Central	Adeno	2	100	0	0	0		0			0	Y								0	1	1	0	0	0
+17316	24687	17316		2	17315	Lung	60-69		F	F	51-60	10	RLL	3	1	1			Central	Adeno	3	10	0	0	5	Muc	90			0	Y								0	4	0	0	0	1
+17320	24689	17320		1	17319	Lung	70-79		M	F	21-30		RLL	2	1	0			Central	Adeno	1	10	61-80	40	10	Muc	0			0	N								0	2	0	1	0	0
+17324	24691	17324		2	17323	Lung	50-59		M	C	>100		RUL	3.5	2	1			Central	Adeno	2	60	21-40	10	0		0			0	Y								0	1	1	0	0	0
+17326	24692	17326		1	17325	Lung	40-49		F	N			LUL	2	1	1			Central	Adeno	3	20	0	0	0		80			0	Y								0	4	0	0	0	1
+17328	24693	17328		2	17327	Lung	60-69		M				RUL	3.5	2	0			Central	Adeno	2	10	81-100	40	0		0			0	Y								0	2	0	1	0	0
+17330	24694	17330		1	17329	Lung	70-79		M	C	41-50		RLL	1.5	1	0			Central	Adeno	2	30	61-80	10	0		0			0	Y								0	2	0	1	0	0
+17726	27173	17726		1	17789	Lung	60-69		F					4	2	0			Central	Adeno	1													Y		Y		80	99	99	99	99	99	99
+17727	27174	17727		2	17790	Lung	70-79		F					3.5	2	>1			Central	Adeno	3																Y	<80	99	99	99	99	99	99
+17728	27175	17728		2	17791	Lung	50-59		F					3.5	2	0			Central	Adeno	1													Y		Y		95	99	99	99	99	99	99
+17730	27177	17730		2	17793	Lung	40-49		F					3.5	2	0			Central	Adeno	1												Y			Y		80	99	99	99	99	99	99
+17731	27178	17731		2	17794	Lung	50-59		F					2	1	0			Central	Adeno	3												Y	Y			Y	80	99	99	99	99	99	99
+17733	27180	17733		1	17796	Lung	60-69		F					4	2	>1			Central	Adeno	1												Y	Y		Y		80	99	99	99	99	99	99
+17735	27182	17735		1	17798	Lung	50-59		M					8	2	>1			Central	Adeno	3												Y	Y				<80	99	99	99	99	99	99
+17737	27184	17737		2	17800	Lung	40-49		F					0.5	2	0			Central	Adeno	1												Y	Y		Y		80	99	99	99	99	99	99
+17738	27185	17738		1	17801	Lung	60-69		M					5	2	1			Central	Adeno	3												Y				Y	80	99	99	99	99	99	99
+17739	27186	17739		2	17802	Lung	70-79		F					5	4	0			Central	Adeno	2												Y	Y				<80	99	99	99	99	99	99
+17741	27188	17741		2	17804	Lung	70-79		M						3	0			Central	Adeno	2												Y	Y				80	99	99	99	99	99	99
+17743	27190	17743		2	17806	Lung	50-59		F										Central	Adeno	3												Y					80	99	99	99	99	99	99
+17745	27192	17745		2	17808	Lung	60-69		M						1	0			Central	Adeno	3												Y	Y			Y	80	99	99	99	99	99	99
+17746	27193	17746		1	17809	Lung	60-69		F						2	0			Central	Adeno	2												Y	Y				80	99	99	99	99	99	99
+17747	27194	17747		2	17810	Lung	60-69		F						2	0			Central	Adeno	2												Y	Y				90	99	99	99	99	99	99
+17750	27197	17750		1	17813	Lung	70-79		M						4	0			Central	Adeno	3												Y	Y			Y	80	99	99	99	99	99	99
+17754	27201	17754		1	17817	Lung	70-79		M						1				Central	Adeno	3												Y	Y			Y	90	99	99	99	99	99	99
+17759	27206	17759		1	17822	Lung	50-59		F						2	>1			Central	Adeno	3												Y	Y			Y	80	99	99	99	99	99	99
+17760	27207	17760		2	17823	Lung	60-69		M						2	0	1		Central	Adeno	2												Y	Y				<80	99	99	99	99	99	99
+17763	27210	17763		1	17826	Lung	70-79		M					7.5	2	1			Central	Adeno	3												Y				Y	90	99	99	99	99	99	99
+17766	27213	17766		2	17829	Lung	60-69		M					4.5	2	0			Central	Adeno	1												Y	Y		Y		<80	99	99	99	99	99	99
+17769	27216	17769		1	17832	Lung								2.5	1	0			Central	Adeno	2												Y	Y				90	99	99	99	99	99	99
+17776	27223	17776		1	17839	Lung	60-69		F					4.5	2	0			Central	Adeno	2												Y	Y				80	99	99	99	99	99	99
+17777	27224	17777		1	17840	Lung	60-69		F					4	2	>1			Central	Adeno	3												Y				Y	80	99	99	99	99	99	99
+17778	27229	17778		1	17841	Lung	<40		F					9	2				Central	Adeno	2												Y	Y	Y			90	99	99	99	99	99	99
+17781	27232	17781		2	17844	Lung	80-89		M					2	1	0			Central	Adeno	2												Y	Y	Y			90	99	99	99	99	99	99
+17784	27235	17784		2	17847	Lung	60-69		F					2	2				Central	Adeno	2												Y	Y				90	99	99	99	99	99	99
