@@ -25,7 +25,7 @@ data("SLAPE.20140608_PATHCOM_HUMAN_nonredundant_intersection")
 load("data/SLAPE.all_genes_exonic_content_block_lengths_ensemble_20160209.RData")
 
 PATHCOM_HUMAN<-
-    SLAPE.Check_and_fix_PathwayCollection(PATHCOM_HUMAN)
+    SLAPE.Check_and_fix_PathwayCollection(Pathways = PATHCOM_HUMAN)
 
 PFPw<-SLAPE.Analyse(wBEM = Dataset,
               show_progress = TRUE,

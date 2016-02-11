@@ -79,9 +79,6 @@ SLE.buildPathMemb<-function(GENES,pathway_ids){
     
     return(MM)
 }
-
-
-
 SLE.assignTotalLengthTOpathways<-function(){
     np<-length(PATHCOM_HUMAN$PATHWAY)
     
@@ -205,38 +202,40 @@ SLAPE.Check_and_fix_GS_Dataset<-function(Dataset){
     return(Dataset)
 }
 
-########################################
 SLAPE.Check_and_fix_PathwayCollection<-function(Pathways){
     
     np<-length(Pathways$PATHWAY)
     
     for (i in 1:np){
-        print(i)
+        print(paste('Checking pathway n.', i, ' (out of ',np,')',sep=''))
         currentGS<-Pathways$HGNC_SYMBOL[[i]]
-        checked_gs<-checkGeneSymbols(currentGS)    
-        non_approved_id<-which(checked_gs[,2]==FALSE)
-        
-        if (length(non_approved_id)>0){
-
-            print(paste('The pathway',Pathways$PATHWAY[i],'contains non-approved gene symbols...'))
-            print('Outdated gene symbols have been updated:')
+        if (length(currentGS)>0){
+            checked_gs<-checkGeneSymbols(currentGS)    
+            non_approved_id<-which(checked_gs[,2]==FALSE)
             
-            outdated_id<-non_approved_id[which(!is.na(checked_gs[non_approved_id,3]))]
-            print(paste(checked_gs[outdated_id,1],'->',checked_gs[outdated_id,3]))
-            
-            non_approved_id<-which(is.na(checked_gs[,3]))
-            if(length(non_approved_id)>0){
-                print('The following non approved gene symbols have been removed:')
-                print(checked_gs[non_approved_id,1])
+            if (length(non_approved_id)>0){
+                
+                print(paste('The pathway',Pathways$PATHWAY[i],'contains non-approved gene symbols...'))
+                print('Outdated gene symbols have been updated:')
+                
+                outdated_id<-non_approved_id[which(!is.na(checked_gs[non_approved_id,3]))]
+                print(paste(checked_gs[outdated_id,1],'->',checked_gs[outdated_id,3]))
+                
+                non_approved_id<-which(is.na(checked_gs[,3]))
+                if(length(non_approved_id)>0){
+                    print('The following non approved gene symbols have been removed:')
+                    print(checked_gs[non_approved_id,1])
                 }
-            
-            currentGS[outdated_id]<-checked_gs[outdated_id,3]
-            currentGS<-setdiff(currentGS,currentGS[non_approved_id])
-            Pathways$HGNC_SYMBOL[[i]]<-currentGS
-            Pathways$Ngenes<-length(currentGS)
-            Pathways$Glengths<-
-                GECOBLenghts[currentGS]
-            }
+                
+                currentGS[outdated_id]<-checked_gs[outdated_id,3]
+                currentGS<-setdiff(currentGS,currentGS[non_approved_id])
+                Pathways$HGNC_SYMBOL[[i]]<-currentGS
+                Pathways$Ngenes<-length(currentGS)
+                Pathways$Glengths<-
+                    GECOBLenghts[currentGS]
+            }    
+        }
+        
     }
     
     Pathways$backGround<-sort(unique(unlist(Pathways$HGNC_SYMBOL)))
