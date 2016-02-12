@@ -336,7 +336,10 @@ SLAPE.Analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=
             if(length(currentGeneSet)>0){
                 pathway_BEM[i,j]<-sign(sum(wBEM[currentGeneSet,j]))
             }
-            pathway_Probability[i,j]<-SLE.hypTest(x,k,n,N)
+            
+            rho<-colSums(wBEM)[j]/sum(GECOBLenghts[rownames(wBEM)])
+            pathway_Probability[i,j]<-1-exp(-rho*sum(GECOBLenghts[PATH_COLLECTION$HGNC_SYMBOL[[i]]]))
+            #pathway_Probability[i,j]<-SLE.hypTest(x,k,n,N)
             if(show_progress){setTxtProgressBar(pb, (i-1)*nsamples+j)}
         }
     }
