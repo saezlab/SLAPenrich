@@ -9,7 +9,7 @@ load('data/SLAPE.20160211_MSigDB_KEGG_updatedHGNC.RData')
 #    SLAPE.Check_and_fix_PathwayCollection(Pathways = PATHCOM_HUMAN,updated.hgnc.table = updated.hgnc.table)
 #save(PATHCOM_HUMAN,file='data/SLAPE.20140608_PATHCOM_HUMAN_nonredundant_intersection_hugoUpdated.RData')
 
-LungTSPvariants<-read.table('externalData/supplementary_table_2.txt',sep='\t',header=TRUE,stringsAsFactors = FALSE)
+LungTSPvariants<-read.table('../../Data/SLAPenrich/externalData/supplementary_table_2.txt',sep='\t',header=TRUE,stringsAsFactors = FALSE)
 
 GeneIds<-unique(LungTSPvariants$HUGO.Symbol)
 GeneIds<-setdiff(GeneIds,'')

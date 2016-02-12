@@ -879,5 +879,82 @@ SLAPE.HeuristicMutExSorting<-function(mutPatterns){
         
         return(FINALMAT)
     }
-    
 }
+
+SLAPE.diffSLAPE.analysis<-function(wBEM,contrastMatrix,positiveCondition,negativeCondition,
+                                   show_progress=TRUE,
+                                   correctionMethod='fdr',
+                                   NSAMPLES=1,NGENES=1,accExLength=TRUE,
+                                   BACKGROUNDpopulation=NULL,
+                                   PATH_COLLECTION,SLAPE.FDRth=5){
+    
+    
+    positiveSamples<-names(which(contrastMatrix[,positiveCondition]==1))
+    negativeSamples<-names(which(contrastMatrix[,negativeCondition]==1))
+    
+    positiveSamples<-intersect(positiveSamples,colnames(wBEM))
+    negativeSamples<-intersect(negativeSamples,colnames(wBEM))
+    
+    positiveBEM<-wBEM[,positiveSamples]
+    negativeBEM<-wBEM[,negativeSamples]
+    
+    print('Analizing positive population...')
+    positive_PFP<-SLAPE.Analyse(wBEM = positiveBEM,
+                  show_progress = TRUE,
+                  NSAMPLES = 0,
+                  NGENES = 0,
+                  BACKGROUNDpopulation = BACKGROUNDpopulation,
+                  PATH_COLLECTION = PATH_COLLECTION,
+                  correctionMethod = correctionMethod)
+    print('Done')
+    
+    print('Analizing negative population...')
+    negative_PFP<-SLAPE.Analyse(wBEM = negativeBEM,
+                                show_progress = TRUE,
+                                NSAMPLES = 0,
+                                NGENES = 0,
+                                BACKGROUNDpopulation = BACKGROUNDpopulation,
+                                PATH_COLLECTION = PATH_COLLECTION,
+                                correctionMethod = correctionMethod)
+    print('Done')
+
+    
+    positive.enrichedP.id<-positive_PFP$pathway_id[which(positive_PFP$pathway_perc_fdr<=SLAPE.FDRth)]
+    negative.enrichedP.id<-negative_PFP$pathway_id[which(negative_PFP$pathway_perc_fdr<=SLAPE.FDRth)]
+
+    allIDS<-union(positive.enrichedP.id,negative.enrichedP.id)
+    
+    positive.pvals<-positive_PFP$pathway_pvals[match(allIDS,positive_PFP$pathway_id)]
+    negative.pvals<-negative_PFP$pathway_pvals[match(allIDS,negative_PFP$pathway_id)]
+    
+    names(positive.pvals)<-allIDS
+    names(negative.pvals)<-allIDS
+    
+    differentialEnrichScores<- -log10(positive.pvals)+log10(negative.pvals)
+    differentialEnrichScores<- sort(differentialEnrichScores,decreasing=TRUE)
+    
+    ids<-names(differentialEnrichScores)
+    positiveFDR<-
+        positive_PFP$pathway_perc_fdr[match(ids,positive_PFP$pathway_id)]
+    negativeFDR<-
+        negative_PFP$pathway_perc_fdr[match(ids,negative_PFP$pathway_id)]
+    
+    positive_pathway_BEM<-positive_PFP$pathway_BEM[match(ids,positive_PFP$pathway_id),]
+    negative_pathway_BEM<-negative_PFP$pathway_BEM[match(ids,negative_PFP$pathway_id),]
+    
+    d <- dist(t(positive_pathway_BEM),method = 'euclidean') # distance matrix
+    fit <- hclust(d,method = 'complete')
+    positive_pathway_BEM<-
+        positive_pathway_BEM[,fit$labels[fit$order]]
+    
+    d <- dist(t(negative_pathway_BEM),method = 'euclidean') # distance matrix
+    fit <- hclust(d,method = 'complete')
+    negative_pathway_BEM<-
+        negative_pathway_BEM[,fit$labels[fit$order]]
+    
+    pheatmap(cbind(positive_pathway_BEM,
+                   negative_pathway_BEM*2),
+             cluster_rows = FALSE,cluster_cols = FALSE)
+    }
+
+    
