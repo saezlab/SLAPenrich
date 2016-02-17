@@ -245,7 +245,7 @@ SLAPE.Check_and_fix_PathwayCollection<-function(Pathways,updated.hgnc.table=upda
 
 
 SLAPE.Analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=1,NGENES=1,accExLength=TRUE,
-                        BACKGROUNDpopulation=NULL,PATH_COLLECTION){
+                        BACKGROUNDpopulation=NULL,PATH_COLLECTION,path_probability='Bernoulli',GECOBLenghts){
     
     if(length(BACKGROUNDpopulation)>0){
         if(length(which(duplicated(BACKGROUNDpopulation)))>0){
@@ -338,8 +338,14 @@ SLAPE.Analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=
             }
             
             rho<-k/N
-            pathway_Probability[i,j]<-1-exp(-rho*n)
-            #pathway_Probability[i,j]<-SLE.hypTest(x,k,n,N)
+            
+            if (path_probability=='Bernoulli'){
+                pathway_Probability[i,j]<-1-exp(-rho*n)    
+                }
+            if (path_probability=='HyperGeom'){
+                pathway_Probability[i,j]<-SLE.hypTest(x,k,n,N)
+                }
+            
             if(show_progress){setTxtProgressBar(pb, (i-1)*nsamples+j)}
         }
     }

@@ -19,12 +19,12 @@ PFPw<-SLAPE.Analyse(wBEM = Dataset,PATH_COLLECTION = KEGG_PATH,
               NSAMPLES = 1,
               NGENES = 1,
               accExLength = TRUE,
-              BACKGROUNDpopulation = rownames(Dataset))
+              BACKGROUNDpopulation = rownames(Dataset),path_probability = 'Bernoulli')
 
-SLAPE.write.table(PFP = PFPw,BEM = Dataset,filename = "../../RESULTS/LungDS_KEGG_enrichments.csv",
+SLAPE.write.table(PFP = PFPw,BEM = Dataset,filename = "../../RESULTS/SLAPenrich/LungDS_KEGG_enrichments.csv",
                   fdrth=5,exclcovth = 0,PATH_COLLECTION = KEGG_PATH)
 
-SLAPE.serialPathVis(BEM = Dataset,PFP = PFPw,fdrth = 1,exCovTh = 0,PATH = "../../RESULTS/",PATH_COLLECTION = KEGG_PATH)
+SLAPE.serialPathVis(BEM = Dataset,PFP = PFPw,fdrth = 1,exCovTh = 0,PATH = "../../RESULTS/SLAPenrich/",PATH_COLLECTION = KEGG_PATH)
 
 
 SLAPE.coreComponents(PFP = PFPw,BEM = Dataset,fdrth = 5,exclcovth = 0,filename = 'temp.results/core.components.pdf',PATH_COLLECTION = KEGG_PATH)
