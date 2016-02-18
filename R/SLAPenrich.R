@@ -202,7 +202,7 @@ SLAPE.Check_and_fix_GS_Dataset<-function(Dataset,updated.hgnc.table){
     return(Dataset)
 }
 
-SLAPE.Check_and_fix_PathwayCollection<-function(Pathways,updated.hgnc.table=updated.hgnc.table){
+SLAPE.Check_and_fix_PathwayCollection<-function(Pathways,updated.hgnc.table=updated.hgnc.table,GeneLenghts=GeneLenghts){
     
     np<-length(Pathways$PATHWAY)
     
@@ -230,10 +230,10 @@ SLAPE.Check_and_fix_PathwayCollection<-function(Pathways,updated.hgnc.table=upda
                 currentGS[outdated_id]<-checked_gs[outdated_id,3]
             }
             currentGS<-setdiff(currentGS,currentGS[non_approved_id])
-            Pathways$HGNC_SYMBOL[[i]]<-intersect(currentGS,names(GECOBLenghts))
+            Pathways$HGNC_SYMBOL[[i]]<-intersect(currentGS,names(GeneLenghts))
             Pathways$Ngenes[i]<-length(currentGS)
             Pathways$Glengths[[i]]<-
-                GECOBLenghts[currentGS]
+                GeneLenghts[currentGS]
         }
         
     }
@@ -243,9 +243,30 @@ SLAPE.Check_and_fix_PathwayCollection<-function(Pathways,updated.hgnc.table=upda
     return(Pathways)
 }
 
+SLAPE.createCometContingency<-function(BEM=BEM){
+    
+    nvars<-nrow(BEM)
+    
+    binstring<-c(0,1:2^nvars)
+    
+    m <- sapply(binstring,function(x){ as.integer(intToBits(x))})
+    m<-t(m[1:nvars,1:(2^nvars)])
+    
+    nr<-nrow(m)
+    
+    contingencyMat<-rep(NA,nr)
+    
+    for(i in 1:nr){
+        mutated<-which(m[i,]==1)
+        notmutated<-which(m[i,]==0)
+        contingencyMat[i]<-length(which(colSums(rbind(mBEM[mutated,],1-mBEM[notmutated,]))==nrow(mBEM)))    
+    }
+    
+}
+
 
 SLAPE.Analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=1,NGENES=1,accExLength=TRUE,
-                        BACKGROUNDpopulation=NULL,PATH_COLLECTION,path_probability='Bernoulli',GECOBLenghts){
+                        BACKGROUNDpopulation=NULL,PATH_COLLECTION,path_probability='Bernoulli',GeneLenghts){
     
     if(length(BACKGROUNDpopulation)>0){
         if(length(which(duplicated(BACKGROUNDpopulation)))>0){
@@ -262,9 +283,9 @@ SLAPE.Analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=
         cat('Sample fingerprinting for pathawy alterations (accounting for gene exonic length)...\n')
         gnames<-unlist(PATH_COLLECTION$HGNC_SYMBOL)
         if(!length(BACKGROUNDpopulation)){
-            N<-sum(GECOBLenghts[unique(gnames)],na.rm = TRUE)
+            N<-sum(GeneLenghts[unique(gnames)],na.rm = TRUE)
         }else{
-            N<-sum(GECOBLenghts[unique(BACKGROUNDpopulation)])
+            N<-sum(GeneLenghts[unique(BACKGROUNDpopulation)])
         }
     }else{
         cat('Sample fingerprinting for pathawy alterations...\n')
@@ -288,6 +309,8 @@ SLAPE.Analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=
     pathway_pvals<-matrix(0,nrow=1,ncol=np,dimnames=list(NULL,1:np))
     pathway_mus<-matrix(0,nrow=1,ncol=np,dimnames=list(NULL,1:np))
     pathwayExclusive_coverage<-matrix(0,nrow=1,ncol=np,dimnames=list(NULL,1:np))
+    pathway_cometPvalue<-matrix(0,nrow=1,ncol=np,dimnames=list(NULL,1:np))
+    pathway_cometFDR<-matrix(0,nrow=1,ncol=np,dimnames=list(NULL,1:np))
     pathway_individualBEMs<-list()
     
     if(show_progress){
@@ -300,14 +323,14 @@ SLAPE.Analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=
         currentGeneSet<-intersect(PATH_COLLECTION$HGNC_SYMBOL[[i]],rownames(wBEM))
         
         GLENGHTS<-
-            GECOBLenghts[currentGeneSet]
+            GeneLenghts[currentGeneSet]
         
         if (length(which(!is.na(GLENGHTS)))==0 | length(currentGeneSet)<=NGENES){
             toExclude[i]<-TRUE
         }
         
         if(accExLength){
-            n <- sum(GECOBLenghts[currentGeneSet],na.rm = TRUE)
+            n <- sum(GeneLenghts[currentGeneSet],na.rm = TRUE)
         }else{
             n <-length(currentGeneSet)
         }
@@ -438,7 +461,7 @@ SLAPE.write.table<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0,PATH_COLLE
     TOTexlength<-rep(NA,length(NAMES))
     
     for (i in 1:length(NAMES)){
-        TOTexlength[i]<-sum(GECOBLenghts[PATH_COLLECTION$HGNC_SYMBOL[[PFP$pathway_id[i]]]])    
+        TOTexlength[i]<-sum(GeneLenghts[PATH_COLLECTION$HGNC_SYMBOL[[PFP$pathway_id[i]]]])    
     }
     
     np<-length(PFP$pathway_id)

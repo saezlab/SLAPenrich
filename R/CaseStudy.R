@@ -19,7 +19,9 @@ PFPw<-SLAPE.Analyse(wBEM = Dataset,PATH_COLLECTION = KEGG_PATH,
               NSAMPLES = 1,
               NGENES = 1,
               accExLength = TRUE,
-              BACKGROUNDpopulation = rownames(Dataset),path_probability = 'Bernoulli')
+              BACKGROUNDpopulation = rownames(Dataset),
+              path_probability = 'Bernoulli',
+              GeneLenghts = GECOBLenghts)
 
 SLAPE.write.table(PFP = PFPw,BEM = Dataset,filename = "../../RESULTS/SLAPenrich/LungDS_KEGG_enrichments.csv",
                   fdrth=5,exclcovth = 0,PATH_COLLECTION = KEGG_PATH)

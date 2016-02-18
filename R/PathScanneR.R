@@ -9,7 +9,8 @@ bernoully_gene_mutProb<-function(gene,rho=10^-6){
 singleSampleExactProbMass<-function(gene_set,mutated_gene_set,rho=10^-6){
     
     b<-bernoully_gene_mutProb(mutated_gene_set,rho = rho)
-    R<-(1-b)
+    R<-(1-b)/b
+    
     G<-sum(GECOBLenghts[mutated_gene_set])
 
     R<-prod(R)

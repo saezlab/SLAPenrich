@@ -6,6 +6,8 @@ load('data/SLAPE.20140608_PATHCOM_HUMAN_nonredundant_intersection_hugoUpdated.Rd
 
 source('R/createLungDataset.R')
 
+load('data/caseStudy_clinicalInfos.Rdata')
 
 
+SLAPE.diffSLAPE.analysis()
 
