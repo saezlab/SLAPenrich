@@ -243,28 +243,6 @@ SLAPE.Check_and_fix_PathwayCollection<-function(Pathways,updated.hgnc.table=upda
     return(Pathways)
 }
 
-SLAPE.createCometContingency<-function(BEM=BEM){
-    
-    nvars<-nrow(BEM)
-    
-    binstring<-c(0,1:2^nvars)
-    
-    m <- sapply(binstring,function(x){ as.integer(intToBits(x))})
-    m<-t(m[1:nvars,1:(2^nvars)])
-    
-    nr<-nrow(m)
-    
-    contingencyMat<-rep(NA,nr)
-    
-    for(i in 1:nr){
-        mutated<-which(m[i,]==1)
-        notmutated<-which(m[i,]==0)
-        contingencyMat[i]<-length(which(colSums(rbind(mBEM[mutated,],1-mBEM[notmutated,]))==nrow(mBEM)))    
-    }
-    
-}
-
-
 SLAPE.Analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=1,NGENES=1,accExLength=TRUE,
                         BACKGROUNDpopulation=NULL,PATH_COLLECTION,path_probability='Bernoulli',GeneLenghts){
     
@@ -285,7 +263,7 @@ SLAPE.Analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=
         if(!length(BACKGROUNDpopulation)){
             N<-sum(GeneLenghts[unique(gnames)],na.rm = TRUE)
         }else{
-            N<-sum(GeneLenghts[unique(BACKGROUNDpopulation)])
+            N<-sum(GeneLenghts[unique(BACKGROUNDpopulation)],na.rm = TRUE)
         }
     }else{
         cat('Sample fingerprinting for pathawy alterations...\n')
@@ -915,14 +893,28 @@ SLAPE.HeuristicMutExSorting<-function(mutPatterns){
 
 SLAPE.diffSLAPE.analysis<-function(wBEM,contrastMatrix,positiveCondition,negativeCondition,
                                    show_progress=TRUE,
-                                   correctionMethod='fdr',
+                                   correctionMethod='fdr',path_probability='Bernoulli',
                                    NSAMPLES=1,NGENES=1,accExLength=TRUE,
                                    BACKGROUNDpopulation=NULL,
                                    PATH_COLLECTION,SLAPE.FDRth=5){
     
     
-    positiveSamples<-names(which(contrastMatrix[,positiveCondition]==1))
-    negativeSamples<-names(which(contrastMatrix[,negativeCondition]==1))
+    
+    if(length(positiveCondition)==1){
+        positiveSamples<-names(which(contrastMatrix[,positiveCondition]==1))    
+    }else{
+        positiveSamples<-names(which(rowSums(contrastMatrix[,positiveCondition])==1))
+        positiveCondition<-paste(positiveCondition,collapse=', ')
+    }
+    
+    if(length(negativeCondition)==1){
+        negativeSamples<-names(which(contrastMatrix[,negativeCondition]==1))
+    
+    }else{
+        negativeSamples<-names(which(rowSums(contrastMatrix[,negativeCondition])==1))
+        negativeCondition<-paste(negativeCondition,collapse=', ')
+    }
+    
     
     positiveSamples<-intersect(positiveSamples,colnames(wBEM))
     negativeSamples<-intersect(negativeSamples,colnames(wBEM))
@@ -931,7 +923,8 @@ SLAPE.diffSLAPE.analysis<-function(wBEM,contrastMatrix,positiveCondition,negativ
     negativeBEM<-wBEM[,negativeSamples]
     
     print('Analizing positive population...')
-    positive_PFP<-SLAPE.Analyse(wBEM = positiveBEM,
+    positive_PFP<-SLAPE.Analyse(wBEM = positiveBEM,path_probability = path_probability,
+                                GeneLenghts = GECOBLenghts,
                   show_progress = TRUE,
                   NSAMPLES = 0,
                   NGENES = 0,
@@ -941,8 +934,8 @@ SLAPE.diffSLAPE.analysis<-function(wBEM,contrastMatrix,positiveCondition,negativ
     print('Done')
     
     print('Analizing negative population...')
-    negative_PFP<-SLAPE.Analyse(wBEM = negativeBEM,
-                                show_progress = TRUE,
+    negative_PFP<-SLAPE.Analyse(wBEM = negativeBEM,path_probability = path_probability,
+                                show_progress = TRUE,GeneLenghts = GECOBLenghts,
                                 NSAMPLES = 0,
                                 NGENES = 0,
                                 BACKGROUNDpopulation = BACKGROUNDpopulation,
@@ -951,8 +944,8 @@ SLAPE.diffSLAPE.analysis<-function(wBEM,contrastMatrix,positiveCondition,negativ
     print('Done')
 
     
-    positive.enrichedP.id<-positive_PFP$pathway_id[which(positive_PFP$pathway_perc_fdr<=SLAPE.FDRth)]
-    negative.enrichedP.id<-negative_PFP$pathway_id[which(negative_PFP$pathway_perc_fdr<=SLAPE.FDRth)]
+    positive.enrichedP.id<-positive_PFP$pathway_id[which(positive_PFP$pathway_perc_fdr<SLAPE.FDRth)]
+    negative.enrichedP.id<-negative_PFP$pathway_id[which(negative_PFP$pathway_perc_fdr<SLAPE.FDRth)]
 
     allIDS<-union(positive.enrichedP.id,negative.enrichedP.id)
     
@@ -971,6 +964,9 @@ SLAPE.diffSLAPE.analysis<-function(wBEM,contrastMatrix,positiveCondition,negativ
     negativeFDR<-
         negative_PFP$pathway_perc_fdr[match(ids,negative_PFP$pathway_id)]
     
+    names(positiveFDR)<-ids
+    names(negativeFDR)<-ids
+    
     positive_pathway_BEM<-positive_PFP$pathway_BEM[match(ids,positive_PFP$pathway_id),]
     negative_pathway_BEM<-negative_PFP$pathway_BEM[match(ids,negative_PFP$pathway_id),]
     
@@ -984,9 +980,49 @@ SLAPE.diffSLAPE.analysis<-function(wBEM,contrastMatrix,positiveCondition,negativ
     negative_pathway_BEM<-
         negative_pathway_BEM[,fit$labels[fit$order]]
     
-    pheatmap(cbind(positive_pathway_BEM,
-                   negative_pathway_BEM*2),
+    
+    COMPD<-cbind(positive_pathway_BEM,
+                 negative_pathway_BEM)
+    
+    
+    FDRs<-cbind(positiveFDR,negativeFDR)
+    FDRs<-FDRs[rownames(COMPD),]/100
+    
+    FDRs<- -log10(FDRs)
+    
+    currentNames<-PATHCOM_HUMAN$PATHWAY[as.numeric(rownames(FDRs))]
+    suffixes<-rep('',length(currentNames))
+    suffixes[which(str_length(currentNames)>50)]<-' ...'
+        
+    currentNames<-str_sub(currentNames,start = 1,end = 50)
+    currentNames<-paste(currentNames,suffixes,sep='')
+    rownames(FDRs)<-currentNames
+        
+    colnames(FDRs)<-c(positiveCondition,negativeCondition)
+    
+    rownames(COMPD)<-rownames(FDRs)
+    
+    
+    annotation_col = data.frame(SampleType = factor(c(rep(positiveCondition, ncol(positive_pathway_BEM)),rep(negativeCondition, ncol(negative_pathway_BEM)))))
+    rownames(annotation_col)<-colnames(COMPD)
+    
+    COMPD<-COMPD[c(1:10,(nrow(COMPD)-9):nrow(COMPD)),]
+    
+    pheatmap(COMPD,col=c('white','blue'),annotation_col = annotation_col,
              cluster_rows = FALSE,cluster_cols = FALSE)
+    
+    
+    annotation_col = data.frame(CellType = factor(c(positiveCondition,negativeCondition)))
+    rownames(annotation_col)<-colnames(FDRs)
+    
+    FDRs[which(FDRs<= -log10(SLAPE.FDRth/100))]<-NA
+    
+    FDRs<-FDRs[c(1:10,(nrow(FDRs)-9):nrow(FDRs)),]
+    
+    
+    pheatmap(FDRs,cluster_rows = FALSE,cluster_cols = FALSE,col=colorRampPalette(colors = c('black','purple'))(100),annotation_col=annotation_col)
+    
+    
     }
 
     
