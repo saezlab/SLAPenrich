@@ -1006,21 +1006,26 @@ SLAPE.diffSLAPE.analysis<-function(wBEM,contrastMatrix,positiveCondition,negativ
     annotation_col = data.frame(SampleType = factor(c(rep(positiveCondition, ncol(positive_pathway_BEM)),rep(negativeCondition, ncol(negative_pathway_BEM)))))
     rownames(annotation_col)<-colnames(COMPD)
     
-    COMPD<-COMPD[c(1:10,(nrow(COMPD)-9):nrow(COMPD)),]
+    COMPD<-COMPD[c(1:30,(nrow(COMPD)-29):nrow(COMPD)),]
     
-    pheatmap(COMPD,col=c('white','blue'),annotation_col = annotation_col,
+    pheatmap(COMPD,col=c('white','blue'),annotation_col = annotation_col,show_colnames = FALSE,
              cluster_rows = FALSE,cluster_cols = FALSE)
     
     
     annotation_col = data.frame(CellType = factor(c(positiveCondition,negativeCondition)))
     rownames(annotation_col)<-colnames(FDRs)
     
-    FDRs[which(FDRs<= -log10(SLAPE.FDRth/100))]<-NA
-    
-    FDRs<-FDRs[c(1:10,(nrow(FDRs)-9):nrow(FDRs)),]
     
     
-    pheatmap(FDRs,cluster_rows = FALSE,cluster_cols = FALSE,col=colorRampPalette(colors = c('black','purple'))(100),annotation_col=annotation_col)
+    #FDRs[which(FDRs<= -log10(SLAPE.FDRth/100))]<-NA
+    
+    FDRs<-FDRs[c(1:30,(nrow(FDRs)-29):nrow(FDRs)),]
+    
+    
+    pheatmap(FDRs,cluster_rows = FALSE,cluster_cols = FALSE,col=colorRampPalette(colors = c('black','purple'))(100),annotation_col=annotation_col,show_colnames = FALSE)
+    barplot(rev(FDRs[,2]-FDRs[,1]),horiz = TRUE,las=2,xlim=c(-15,15))
+    
+    
     
     
     }

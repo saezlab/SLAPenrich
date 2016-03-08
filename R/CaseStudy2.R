@@ -1,3 +1,9 @@
+
+library(HGNChelper)
+library(poibin)
+library(stringr)
+library(pheatmap)
+
 source('R/SLAPenrich.R')
 
 load("data/SLAPE.all_genes_exonic_content_block_lengths_ensemble_20160209.RData")
