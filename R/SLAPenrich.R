@@ -1023,7 +1023,8 @@ SLAPE.diffSLAPE.analysis<-function(wBEM,contrastMatrix,positiveCondition,negativ
     
     
     pheatmap(FDRs,cluster_rows = FALSE,cluster_cols = FALSE,col=colorRampPalette(colors = c('black','purple'))(100),annotation_col=annotation_col,show_colnames = FALSE)
-    barplot(rev(FDRs[,2]-FDRs[,1]),horiz = TRUE,las=2,xlim=c(-15,15))
+    par(mar=c(4,25,4,4))
+    barplot(rev(FDRs[,2]-FDRs[,1]),horiz = TRUE,las=2,xlim=c(-7,7),cex.names = 0.7)
     
     
     
