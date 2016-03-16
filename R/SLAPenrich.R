@@ -169,14 +169,13 @@ SLE.plotMyHeat <- function(x,orPlot,verdata,filename) {
     dev.off()
 }
 
-
 SLAPE.readDataset<-function(filename){
     fc<-as.matrix(read.csv(filename,row.names=1))
     fc[is.na(fc)]<-0
     
     return(fc)
 }
-SLAPE.Check_and_fix_GS_Dataset<-function(Dataset,updated.hgnc.table){
+SLAPE.check_and_fix_gs_Dataset<-function(Dataset,updated.hgnc.table){
     checked_gs<-checkGeneSymbols(rownames(Dataset),hgnc.table = updated.hgnc.table)    
 
     non_approved_id<-which(checked_gs[,2]==FALSE)
@@ -201,9 +200,7 @@ SLAPE.Check_and_fix_GS_Dataset<-function(Dataset,updated.hgnc.table){
     
     return(Dataset)
 }
-
-
-SLAPE.Analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=1,NGENES=1,accExLength=TRUE,
+SLAPE.analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=1,NGENES=1,accExLength=TRUE,
                         BACKGROUNDpopulation=NULL,PATH_COLLECTION,path_probability='Bernoulli',GeneLenghts){
     
     if(length(BACKGROUNDpopulation)>0){
@@ -445,7 +442,7 @@ SLAPE.write.table<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0,PATH_COLLE
     
     write.csv(totres,file=filename,quote=FALSE,row.names=FALSE)
 }
-SLAPE.pathVis<-function(BEM,PFP,Id,i=NULL,PATH='./',PATH_COLLECTION){
+SLAPE.pathvis<-function(BEM,PFP,Id,i=NULL,PATH='./',PATH_COLLECTION){
     
     genes<-PATH_COLLECTION$HGNC_SYMBOL[[Id]]
     
@@ -525,7 +522,7 @@ SLAPE.serialPathVis<-function(BEM,PFP,fdrth=5,exCovTh=50,PATH='./',PATH_COLLECTI
         print('+ Done!')
     }
 }
-SLAPE.coreComponents<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0,PATH_COLLECTION){
+SLAPE.core_components<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0,PATH_COLLECTION){
     
     BEM<-sign(BEM)
     
@@ -613,7 +610,7 @@ SLAPE.coreComponents<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0,PATH_CO
     Sys.sleep(1)
     close(pb)
 }
-SLAPE.Gene_ECBLength<-function(ExonAttributes,GENE){
+SLAPE.gene_ecbl_ength<-function(ExonAttributes,GENE){
     
     id<-which(is.element(ExonAttributes$external_gene_name,GENE))
     
@@ -642,8 +639,7 @@ SLAPE.Gene_ECBLength<-function(ExonAttributes,GENE){
 
     return(ECBlenght)
 }
-
-SLAPE.UpdateExonAttributes<-function(){
+SLAPE.update_exon_attributes<-function(){
     print("Updating Gene Exons Attributes... please wait...")
     EnsemblMart = useEnsembl(biomart="ensembl",dataset = 'hsapiens_gene_ensembl')
     
@@ -691,7 +687,7 @@ SLAPE.UpdateExonAttributes<-function(){
     print("DONE!")
     return(ExonAttributes)
 }
-SLAPE.UpdateHGNC.Table<-function(){
+SLAPE.update_HGNC_Table<-function(){
     print('Downloading updated table from genaname.org')
     day<-Sys.time()
     day<-str_split(day,' ')[[1]][1]
@@ -746,8 +742,7 @@ SLAPE.UpdateHGNC.Table<-function(){
     updated.hgnc.table<-data.frame(updated.hgnc.table)
     return(updated.hgnc.table)
 }
-
-SLAPE.computeGeneExonContentBlockLengths<-function(ExonAttributes){
+SLAPE.compute_gene_exon_content_block_lengths<-function(ExonAttributes){
     print("Updating Genome-Wide Exon content block lengths... please wait...")
     uniqueGS<-unique(ExonAttributes$external_gene_name)
     ngenes<-length(uniqueGS)
@@ -765,7 +760,7 @@ SLAPE.computeGeneExonContentBlockLengths<-function(ExonAttributes){
     print("DONE!")
     return(GECOBLenghts)
 }
-SLAPE.HeuristicMutExSorting<-function(mutPatterns){
+SLAPE.heuristic_mut_ex_sorting<-function(mutPatterns){
     
     mutPatterns<-sign(mutPatterns)
     
@@ -850,8 +845,7 @@ SLAPE.HeuristicMutExSorting<-function(mutPatterns){
         return(FINALMAT)
     }
 }
-
-SLAPE.diffSLAPE.analysis<-function(wBEM,contrastMatrix,positiveCondition,negativeCondition,
+SLAPE.diff_SLAPE_analysis<-function(wBEM,contrastMatrix,positiveCondition,negativeCondition,
                                    show_progress=TRUE,display=TRUE,
                                    correctionMethod='fdr',path_probability='Bernoulli',
                                    NSAMPLES=1,NGENES=1,accExLength=TRUE,
@@ -969,17 +963,13 @@ SLAPE.diffSLAPE.analysis<-function(wBEM,contrastMatrix,positiveCondition,negativ
     COMPD<-COMPD[c(1:30,(nrow(COMPD)-29):nrow(COMPD)),]
     
     if(display){
-        
-    
         pheatmap(COMPD,col=c('white','blue'),annotation_col = annotation_col,show_colnames = FALSE,
                  cluster_rows = FALSE,cluster_cols = FALSE)
     }
     
     annotation_col = data.frame(CellType = factor(c(positiveCondition,negativeCondition)))
     rownames(annotation_col)<-colnames(FDRs)
-    
-    
-    
+
     
     if(display){
         pheatmap(FDRs,cluster_rows = FALSE,cluster_cols = FALSE,col=colorRampPalette(colors = c('black','purple'))(100),annotation_col=annotation_col,show_colnames = FALSE)
