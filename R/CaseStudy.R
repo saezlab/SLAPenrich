@@ -24,7 +24,7 @@ PFPw<-SLAPE.Analyse(wBEM = Dataset,PATH_COLLECTION = KEGG_PATH,
                     GeneLenghts = GECOBLenghts)
 
 SLAPE.write.table(PFP = PFPw,BEM = Dataset,filename = "../../RESULTS/SLAPenrich/LungDS_KEGG_enrichments.csv",
-                  fdrth=5,exclcovth = 0,PATH_COLLECTION = KEGG_PATH)
+                  fdrth=5,exclcovth = 50,PATH_COLLECTION = KEGG_PATH,GeneLenghts = GECOBLenghts)
 
 SLAPE.serialPathVis(BEM = Dataset,PFP = PFPw,fdrth = 1,exCovTh = 0,PATH = "../../RESULTS/SLAPenrich/",PATH_COLLECTION = KEGG_PATH)
 

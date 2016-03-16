@@ -202,46 +202,6 @@ SLAPE.Check_and_fix_GS_Dataset<-function(Dataset,updated.hgnc.table){
     return(Dataset)
 }
 
-SLAPE.Check_and_fix_PathwayCollection<-function(Pathways,updated.hgnc.table=updated.hgnc.table,GeneLenghts=GeneLenghts){
-    
-    np<-length(Pathways$PATHWAY)
-    
-    for (i in 1:np){
-        print(paste('Checking pathway n.', i, ' (out of ',np,')',sep=''))
-        currentGS<-Pathways$HGNC_SYMBOL[[i]]
-        if (length(currentGS)>0){
-            checked_gs<-checkGeneSymbols(currentGS,hgnc.table = updated.hgnc.table)    
-            non_approved_id<-which(checked_gs[,2]==FALSE)
-            
-            if (length(non_approved_id)>0){
-                
-                print(paste('The pathway',Pathways$PATHWAY[i],'contains non-approved gene symbols...'))
-                print('Outdated gene symbols have been updated:')
-                
-                outdated_id<-non_approved_id[which(!is.na(checked_gs[non_approved_id,3]))]
-                print(paste(checked_gs[outdated_id,1],'->',checked_gs[outdated_id,3]))
-                
-                non_approved_id<-which(is.na(checked_gs[,3]))
-                if(length(non_approved_id)>0){
-                    print('The following non approved gene symbols have been removed:')
-                    print(checked_gs[non_approved_id,1])
-                }
-                
-                currentGS[outdated_id]<-checked_gs[outdated_id,3]
-            }
-            currentGS<-setdiff(currentGS,currentGS[non_approved_id])
-            Pathways$HGNC_SYMBOL[[i]]<-intersect(currentGS,names(GeneLenghts))
-            Pathways$Ngenes[i]<-length(currentGS)
-            Pathways$Glengths[[i]]<-
-                GeneLenghts[currentGS]
-        }
-        
-    }
-    
-    Pathways$backGround<-sort(unique(unlist(Pathways$HGNC_SYMBOL)))
-    
-    return(Pathways)
-}
 
 SLAPE.Analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=1,NGENES=1,accExLength=TRUE,
                         BACKGROUNDpopulation=NULL,PATH_COLLECTION,path_probability='Bernoulli',GeneLenghts){
@@ -418,7 +378,7 @@ SLAPE.Analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=
                 pathway_exclusiveCoverage=pathwayExclusive_coverage,
                 pathway_individualBEMs=pathway_individualBEMs))
 }
-SLAPE.write.table<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0,PATH_COLLECTION){
+SLAPE.write.table<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0,PATH_COLLECTION,GeneLenghts){
     
     id<-which(PFP$pathway_exclusiveCoverage>exclcovth & PFP$pathway_perc_fdr<fdrth)
     
@@ -892,7 +852,7 @@ SLAPE.HeuristicMutExSorting<-function(mutPatterns){
 }
 
 SLAPE.diffSLAPE.analysis<-function(wBEM,contrastMatrix,positiveCondition,negativeCondition,
-                                   show_progress=TRUE,
+                                   show_progress=TRUE,display=TRUE,
                                    correctionMethod='fdr',path_probability='Bernoulli',
                                    NSAMPLES=1,NGENES=1,accExLength=TRUE,
                                    BACKGROUNDpopulation=NULL,
@@ -1008,27 +968,31 @@ SLAPE.diffSLAPE.analysis<-function(wBEM,contrastMatrix,positiveCondition,negativ
     
     COMPD<-COMPD[c(1:30,(nrow(COMPD)-29):nrow(COMPD)),]
     
-    pheatmap(COMPD,col=c('white','blue'),annotation_col = annotation_col,show_colnames = FALSE,
-             cluster_rows = FALSE,cluster_cols = FALSE)
+    if(display){
+        
     
+        pheatmap(COMPD,col=c('white','blue'),annotation_col = annotation_col,show_colnames = FALSE,
+                 cluster_rows = FALSE,cluster_cols = FALSE)
+    }
     
     annotation_col = data.frame(CellType = factor(c(positiveCondition,negativeCondition)))
     rownames(annotation_col)<-colnames(FDRs)
     
     
     
-    #FDRs[which(FDRs<= -log10(SLAPE.FDRth/100))]<-NA
     
-    FDRs<-FDRs[c(1:30,(nrow(FDRs)-29):nrow(FDRs)),]
+    if(display){
+        pheatmap(FDRs,cluster_rows = FALSE,cluster_cols = FALSE,col=colorRampPalette(colors = c('black','purple'))(100),annotation_col=annotation_col,show_colnames = FALSE)
+        par(mar=c(4,25,4,4))
+        barplot(rev(FDRs[,1]-FDRs[,2]),horiz = TRUE,las=2,xlim=c(-7,7),cex.names = 0.7)
+    }
     
+    diffSLenrich<-FDRs[,1]-FDRs[,2]
     
-    pheatmap(FDRs,cluster_rows = FALSE,cluster_cols = FALSE,col=colorRampPalette(colors = c('black','purple'))(100),annotation_col=annotation_col,show_colnames = FALSE)
-    par(mar=c(4,25,4,4))
-    barplot(rev(FDRs[,2]-FDRs[,1]),horiz = TRUE,las=2,xlim=c(-7,7),cex.names = 0.7)
+    RES<-cbind(FDRs,diffSLenrich)
+    colnames(RES)[3]<-'Diff.SL.Enrich'
     
-    
-    
-    
+    return(RES)
     }
 
     

@@ -15,8 +15,8 @@ source('R/createLungDataset.R')
 load('data/caseStudy_clinicalInfos.Rdata')
 
 
-SLAPE.diffSLAPE.analysis(wBEM = Dataset,contrastMatrix = CLINIC_MAT,BACKGROUNDpopulation = rownames(Dataset),SLAPE.FDRth = 5,
+RES<-SLAPE.diffSLAPE.analysis(wBEM = Dataset,contrastMatrix = CLINIC_MAT,BACKGROUNDpopulation = rownames(Dataset),SLAPE.FDRth = 5,display = FALSE,
                          positiveCondition = 'SS_CurrentSmoker',negativeCondition = 'SS_Never',PATH_COLLECTION = PATHCOM_HUMAN)
 
-SLAPE.diffSLAPE.analysis(wBEM = Dataset,contrastMatrix = CLINIC_MAT,BACKGROUNDpopulation = rownames(Dataset),SLAPE.FDRth = 5,
+RES1<-SLAPE.diffSLAPE.analysis(wBEM = Dataset,contrastMatrix = CLINIC_MAT,BACKGROUNDpopulation = rownames(Dataset),SLAPE.FDRth = 5,display = FALSE,
                          positiveCondition = "BAC_Type_nonMucinous",negativeCondition = "BAC_Type_Mucinous",PATH_COLLECTION = PATHCOM_HUMAN)
