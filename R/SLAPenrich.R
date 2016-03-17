@@ -200,9 +200,17 @@ SLAPE.check_and_fix_gs_Dataset<-function(Dataset,updated.hgnc.table){
     
     return(Dataset)
 }
-SLAPE.analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=1,NGENES=1,accExLength=TRUE,
-                        BACKGROUNDpopulation=NULL,PATH_COLLECTION,path_probability='Bernoulli',GeneLenghts){
-    
+SLAPE.analyse<-function(EM,
+                        show_progress=TRUE,
+                        correctionMethod='fdr',
+                        NSAMPLES=1,
+                        NGENES=1,
+                        accExLength=TRUE,
+                        BACKGROUNDpopulation=NULL,
+                        PATH_COLLECTION,
+                        path_probability='Bernoulli',
+                        GeneLenghts){
+    #####AGGIUNGERE RHO TRA I PARAMETRI e modificare la funzione sotto ###################
     if(length(BACKGROUNDpopulation)>0){
         if(length(which(duplicated(BACKGROUNDpopulation)))>0){
             warning('Duplicated gene names found in the background population')
@@ -210,8 +218,8 @@ SLAPE.analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=
         BACKGROUNDpopulation<-unique(BACKGROUNDpopulation)
     }
     
-    if(sum(is.na(wBEM))>0){
-        error('The inputted BEM contains NA!')
+    if(sum(is.na(EM))>0){
+        error('The inputted EM contains NA!')
     }
     
     if(accExLength){
@@ -234,19 +242,19 @@ SLAPE.analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=
     
     np<-length(PATH_COLLECTION$PATHWAY)
     
-    nsamples<-ncol(wBEM)
+    nsamples<-ncol(EM)
     
     PN<-PATH_COLLECTION$PATHWAY
     
-    pathway_BEM<-matrix(0,nrow=np,ncol=nsamples,dimnames=list(1:np,colnames(wBEM)))
-    pathway_Probability<-matrix(0,nrow=np,ncol=nsamples,dimnames=list(1:np,colnames(wBEM)))
+    pathway_EM<-matrix(0,nrow=np,ncol=nsamples,dimnames=list(1:np,colnames(EM)))
+    pathway_Probability<-matrix(0,nrow=np,ncol=nsamples,dimnames=list(1:np,colnames(EM)))
     pathway_grandTotal<-matrix(0,nrow=1,ncol=np,dimnames=list(NULL,1:np))
     pathway_pvals<-matrix(0,nrow=1,ncol=np,dimnames=list(NULL,1:np))
     pathway_mus<-matrix(0,nrow=1,ncol=np,dimnames=list(NULL,1:np))
     pathwayExclusive_coverage<-matrix(0,nrow=1,ncol=np,dimnames=list(NULL,1:np))
     pathway_cometPvalue<-matrix(0,nrow=1,ncol=np,dimnames=list(NULL,1:np))
     pathway_cometFDR<-matrix(0,nrow=1,ncol=np,dimnames=list(NULL,1:np))
-    pathway_individualBEMs<-list()
+    pathway_individualEMs<-list()
     
     if(show_progress){
         pb <- txtProgressBar(min=1,max=nsamples*np,style=3)
@@ -255,7 +263,7 @@ SLAPE.analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=
     toExclude<-rep(FALSE,np)
     for (i in 1:np){
         
-        currentGeneSet<-intersect(PATH_COLLECTION$HGNC_SYMBOL[[i]],rownames(wBEM))
+        currentGeneSet<-intersect(PATH_COLLECTION$HGNC_SYMBOL[[i]],rownames(EM))
         
         GLENGHTS<-
             GeneLenghts[currentGeneSet]
@@ -272,37 +280,37 @@ SLAPE.analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=
         
         
         if (length(currentGeneSet)>1){
-            pathway_individualBEMs[[i]]<-wBEM[currentGeneSet,]
+            pathway_individualEMs[[i]]<-EM[currentGeneSet,]
         }else{
-            pathway_individualBEMs[[i]]<-matrix(wBEM[currentGeneSet,],1,ncol(wBEM),dimnames = list(currentGeneSet,colnames(wBEM)))
+            pathway_individualEMs[[i]]<-matrix(EM[currentGeneSet,],1,ncol(EM),dimnames = list(currentGeneSet,colnames(EM)))
         }
         
-        sampleCovered<-sum(colSums(pathway_individualBEMs[[i]])>0)
-        exclusiveSampleCovered<-sum(colSums(pathway_individualBEMs[[i]])==1)
+        sampleCovered<-sum(colSums(pathway_individualEMs[[i]])>0)
+        exclusiveSampleCovered<-sum(colSums(pathway_individualEMs[[i]])==1)
         
         pathwayExclusive_coverage[i]<-100*exclusiveSampleCovered/sampleCovered
         
         if (length(currentGeneSet)>0){
-            pathway_grandTotal[i]<-sum(unlist(c(wBEM[currentGeneSet,])))
+            pathway_grandTotal[i]<-sum(unlist(c(EM[currentGeneSet,])))
         }else{
             pathway_grandTotal[i]<-0
         }
         
         for (j in 1:nsamples){
-            k <- sum(wBEM[,j])
+            k <- sum(EM[,j])
             x<-1
             if(length(currentGeneSet)>0){
-                pathway_BEM[i,j]<-sign(sum(wBEM[currentGeneSet,j]))
+                pathway_EM[i,j]<-sign(sum(EM[currentGeneSet,j]))
             }
             
             rho<-k/N
             
             if (path_probability=='Bernoulli'){
                 pathway_Probability[i,j]<-1-exp(-rho*n)    
-                }
+            }
             if (path_probability=='HyperGeom'){
                 pathway_Probability[i,j]<-SLE.hypTest(x,k,n,N)
-                }
+            }
             
             if(show_progress){setTxtProgressBar(pb, (i-1)*nsamples+j)}
         }
@@ -318,40 +326,40 @@ SLAPE.analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=
     pathway_mus<-rowSums(pathway_Probability)
     pathway_var<-rowSums(1-pathway_Probability)*pathway_Probability
     
-    pathway_logOddRatios<-log10(rowSums(pathway_BEM)/pathway_mus)
+    pathway_logOddRatios<-log10(rowSums(pathway_EM)/pathway_mus)
     
     for (i in 1:nrow(pathway_Probability)){
-        pathway_pvals[i]<-sum(dpoibin(rowSums(pathway_BEM)[i]:ncol(wBEM),pathway_Probability[i,]))
+        pathway_pvals[i]<-sum(dpoibin(rowSums(pathway_EM)[i]:ncol(EM),pathway_Probability[i,]))
     }
     
-    id<-which(rowSums(pathway_BEM)>=NSAMPLES)
+    id<-which(rowSums(pathway_EM)>=NSAMPLES)
     
     pathway_id<-pathway_id[id]
-    pathway_BEM<-pathway_BEM[id,]
+    pathway_EM<-pathway_EM[id,]
     pathway_Probability<-pathway_Probability[id,]
     pathway_pvals<-pathway_pvals[id]
     pathway_mus<-pathway_mus[id]
     pathway_logOddRatios<-pathway_logOddRatios[id]
-    pathway_individualBEMs<-pathway_individualBEMs[id]
+    pathway_individualEMs<-pathway_individualEMs[id]
     pathwayExclusive_coverage<-pathwayExclusive_coverage[id]
     toExclude<-toExclude[id]
     
     pathway_id<-pathway_id[order(pathway_pvals)]
-    pathway_BEM<-pathway_BEM[order(pathway_pvals),]
+    pathway_EM<-pathway_EM[order(pathway_pvals),]
     pathway_Probability<-pathway_Probability[order(pathway_pvals),]
     pathway_logOddRatios<-pathway_logOddRatios[order(pathway_pvals)]
     pathway_mus<-pathway_mus[order(pathway_pvals)]
-    pathway_individualBEMs<-pathway_individualBEMs[order(pathway_pvals)]
+    pathway_individualEMs<-pathway_individualEMs[order(pathway_pvals)]
     pathwayExclusive_coverage<-pathwayExclusive_coverage[order(pathway_pvals)]
     toExclude<-toExclude[order(pathway_pvals)]
     pathway_pvals<-sort(pathway_pvals)
     
     pathway_id<-pathway_id[which(!toExclude)]
-    pathway_BEM<-pathway_BEM[which(!toExclude),]
+    pathway_EM<-pathway_EM[which(!toExclude),]
     pathway_Probability<-pathway_Probability[which(!toExclude),]
     pathway_logOddRatios<-pathway_logOddRatios[which(!toExclude)]
     pathway_mus<-pathway_mus[which(!toExclude)]
-    pathway_individualBEMs<-pathway_individualBEMs[which(!toExclude)]
+    pathway_individualEMs<-pathway_individualEMs[which(!toExclude)]
     pathwayExclusive_coverage<-pathwayExclusive_coverage[which(!toExclude)]
     pathway_pvals<-pathway_pvals[which(!toExclude)]
     toExclude<-toExclude[which(!toExclude)]
@@ -366,22 +374,22 @@ SLAPE.analyse<-function(wBEM,show_progress=TRUE,correctionMethod='fdr',NSAMPLES=
     cat('\nDone!...\n')
     
     return(list(pathway_id=pathway_id,
-                pathway_BEM=pathway_BEM,
+                pathway_EM=pathway_EM,
                 pathway_Probability=pathway_Probability,
                 pathway_mus=pathway_mus,
                 pathway_logOddRatios=pathway_logOddRatios,
                 pathway_pvals=pathway_pvals,
                 pathway_perc_fdr=pathway_perc_fdr,
                 pathway_exclusiveCoverage=pathwayExclusive_coverage,
-                pathway_individualBEMs=pathway_individualBEMs))
+                pathway_individualEMs=pathway_individualEMs))
 }
-SLAPE.write.table<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0,PATH_COLLECTION,GeneLenghts){
+SLAPE.write.table<-function(PFP,EM,filename='',fdrth=Inf,exclcovth=0,PATH_COLLECTION,GeneLenghts){
     
     id<-which(PFP$pathway_exclusiveCoverage>exclcovth & PFP$pathway_perc_fdr<fdrth)
     
     PFP$pathway_id<-PFP$pathway_id[id]
     PFP$pathway_mus<-PFP$pathway_mus[id]
-    PFP$pathway_BEM<-PFP$pathway_BEM[id,]
+    PFP$pathway_EM<-PFP$pathway_EM[id,]
     PFP$pathway_logOddRatios<-PFP$pathway_logOddRatios[id]
     PFP$pathway_pvals<-PFP$pathway_pvals[id]
     PFP$pathway_perc_fdr<-PFP$pathway_perc_fdr[id]
@@ -403,14 +411,14 @@ SLAPE.write.table<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0,PATH_COLLE
     mutGenes<-rep('',length(np))
     for (i in 1:np){
         currentGenes<-PATH_COLLECTION$HGNC_SYMBOL[[PFP$pathway_id[i]]]
-        currentGenes<-intersect(currentGenes,rownames(BEM))
+        currentGenes<-intersect(currentGenes,rownames(EM))
         
         if (length(currentGenes)>1){
-            freqs<-sort(100*rowSums(sign(BEM[currentGenes,]))/ncol(BEM),decreasing=TRUE)
+            freqs<-sort(100*rowSums(sign(EM[currentGenes,]))/ncol(EM),decreasing=TRUE)
             freqs<-freqs[freqs>0]
             mutGenes[i]<-paste(paste(names(freqs),' (',format(freqs,digits=2),' %)',sep=''),collapse=' ')
         }else{
-            freqs<-100*sum(sign(BEM[currentGenes,]))/ncol(BEM)
+            freqs<-100*sum(sign(EM[currentGenes,]))/ncol(EM)
             mutGenes[i]<-paste(paste(currentGenes,' (',format(freqs,digits=2),' %)',sep=''),collapse=' ')
         }
     }
@@ -420,7 +428,7 @@ SLAPE.write.table<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0,PATH_COLLE
                   PATH_COLLECTION$Ngenes[PFP$pathway_id],
                   TOTexlength,
                   PFP$pathway_mus,
-                  rowSums(PFP$pathway_BEM),
+                  rowSums(PFP$pathway_EM),
                   PFP$pathway_logOddRatios,
                   PFP$pathway_pvals,
                   PFP$pathway_perc_fdr,
@@ -442,16 +450,16 @@ SLAPE.write.table<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0,PATH_COLLE
     
     write.csv(totres,file=filename,quote=FALSE,row.names=FALSE)
 }
-SLAPE.pathvis<-function(BEM,PFP,Id,i=NULL,PATH='./',PATH_COLLECTION){
+SLAPE.pathvis<-function(EM,PFP,Id,i=NULL,PATH='./',PATH_COLLECTION){
     
     genes<-PATH_COLLECTION$HGNC_SYMBOL[[Id]]
     
     nGenesInPath<-length(genes)
-    genes<-intersect(genes,rownames(BEM))
+    genes<-intersect(genes,rownames(EM))
     
     fn<-paste(PATH,i,'_',Id,'_a.pdf',sep='')
     
-    toPlot<-matrix(c(BEM[genes,]),nrow = length(genes),ncol = ncol(BEM),dimnames = list(genes,colnames(BEM)))
+    toPlot<-matrix(c(EM[genes,]),nrow = length(genes),ncol = ncol(EM),dimnames = list(genes,colnames(EM)))
     
     Pid<-which(PFP$pathway_id==Id)
     
@@ -483,7 +491,7 @@ SLAPE.pathvis<-function(BEM,PFP,Id,i=NULL,PATH='./',PATH_COLLECTION){
     
     par(mfrow=c(3,1))
     
-    barplot(colSums(BEM),las=2,main='n. mutated genes per sample',names.arg = '')
+    barplot(colSums(EM),las=2,main='n. mutated genes per sample',names.arg = '')
     
     
     barplot(PFP$pathway_Probability[Pid,],las=2,main='p(one mutation in this pathway)',log = 'y',
@@ -491,17 +499,17 @@ SLAPE.pathvis<-function(BEM,PFP,Id,i=NULL,PATH='./',PATH_COLLECTION){
                        format(sum(PFP$pathway_Probability[Pid,]),digits=2)),names.arg = '')
     
     if(length(genes)>1){
-        bem<-as.numeric(sign(colSums(BEM[genes,])))
+        EM<-as.numeric(sign(colSums(EM[genes,])))
     }else{
-        bem<-as.numeric(BEM[genes,])
+        EM<-as.numeric(EM[genes,])
     }
     
-    barplot(bem,las=2,
-            main=paste('Samples with mutations in this pathway =',sum(bem)),names.arg = '',xlab='samples',yaxt='n')
+    barplot(EM,las=2,
+            main=paste('Samples with mutations in this pathway =',sum(EM)),names.arg = '',xlab='samples',yaxt='n')
     
     dev.off()
 }
-SLAPE.serialPathVis<-function(BEM,PFP,fdrth=5,exCovTh=50,PATH='./',PATH_COLLECTION){
+SLAPE.serialPathVis<-function(EM,PFP,fdrth=5,exCovTh=50,PATH='./',PATH_COLLECTION){
     Ids<-which(PFP$pathway_perc_fdr<fdrth & PFP$pathway_exclusiveCoverage>exCovTh)
     
     if (length(Ids)==0){
@@ -515,22 +523,23 @@ SLAPE.serialPathVis<-function(BEM,PFP,fdrth=5,exCovTh=50,PATH='./',PATH_COLLECTI
         for (i in 1:length(Ids)){
             
             setTxtProgressBar(pb, i)
-            SLAPE.pathVis(BEM = BEM,PFP = PFP,i = i,Id = PFP$pathway_id[Ids[i]],PATH = PATH,PATH_COLLECTION = PATH_COLLECTION)
+            SLAPE.pathVis(EM = EM,PFP = PFP,i = i,Id = PFP$pathway_id[Ids[i]],PATH = PATH,PATH_COLLECTION = PATH_COLLECTION)
         }
         Sys.sleep(1)
         close(pb)
         print('+ Done!')
     }
 }
-SLAPE.core_components<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0,PATH_COLLECTION){
+SLAPE.core_components<-function(PFP,EM,PATH='./',fdrth=Inf,exclcovth=0,PATH_COLLECTION){
     
-    BEM<-sign(BEM)
+    filename<-PATH
+    EM<-sign(EM)
     
     id<-which(PFP$pathway_exclusiveCoverage>exclcovth & PFP$pathway_perc_fdr<fdrth)
     
     PFP$pathway_id<-PFP$pathway_id[id]
     PFP$pathway_mus<-PFP$pathway_mus[id]
-    PFP$pathway_BEM<-PFP$pathway_BEM[id,]
+    PFP$pathway_EM<-PFP$pathway_EM[id,]
     PFP$pathway_logOddRatios<-PFP$pathway_logOddRatios[id]
     PFP$pathway_pvals<-PFP$pathway_pvals[id]
     PFP$pathway_perc_fdr<-PFP$pathway_perc_fdr[id]
@@ -548,7 +557,7 @@ SLAPE.core_components<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0,PATH_C
     
     for (i in 1:np){
         currentGenes<-PATH_COLLECTION$HGNC_SYMBOL[[PFP$pathway_id[i]]]
-        currentGenes<-intersect(currentGenes,rownames(BEM))
+        currentGenes<-intersect(currentGenes,rownames(EM))
         
         if (i == 1){
             mutG<-currentGenes
@@ -559,7 +568,7 @@ SLAPE.core_components<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0,PATH_C
     
     mutG<-sort(mutG)
     
-    FREQS<-sort(rowSums(BEM[mutG,]),decreasing=TRUE)
+    FREQS<-sort(rowSums(EM[mutG,]),decreasing=TRUE)
     
     MM<-SLE.buildPathMemb(mutG,PFP$pathway_id,PATH_COLLECTION)
     
@@ -591,15 +600,15 @@ SLAPE.core_components<-function(PFP,BEM,filename='',fdrth=Inf,exclcovth=0,PATH_C
         if (length(dim(subData))>0){
             names(verdata)<-PATH_COLLECTION$PATHWAY[as.numeric(colnames(subData))]
             
-            SLE.plotMyHeat(subData,100*rowSums(BEM[rownames(subData),])/ncol(BEM),verdata,filename=filen)
+            SLE.plotMyHeat(subData,100*rowSums(EM[rownames(subData),])/ncol(EM),verdata,filename=filen)
         }else{
             names(verdata)<-PATH_COLLECTION$PATHWAY[as.numeric(intersect(elements,colnames(MM)))]
-            SLE.plotMyHeat(matrix(subData,length(subData),1,dimnames = list(names(subData),NULL)),100*rowSums(BEM[names(subData),])/ncol(BEM),verdata,
+            SLE.plotMyHeat(matrix(subData,length(subData),1,dimnames = list(names(subData),NULL)),100*rowSums(EM[names(subData),])/ncol(EM),verdata,
                            filename=filen)
         }
         
         
-        genesInCoreComponent<-100*rowSums(BEM[rownames(subData),])/ncol(BEM)
+        genesInCoreComponent<-100*rowSums(EM[rownames(subData),])/ncol(EM)
         pathwaysAndEnrichsFDR<-verdata
         
         DATAtoPlot<-list(genesInCoreComponents=genesInCoreComponent,pathwaysAndFDR=pathwaysAndEnrichsFDR)
@@ -634,9 +643,9 @@ SLAPE.gene_ecbl_ength<-function(ExonAttributes,GENE){
         }
         
         ECBlenght<-sum(sign(colSums(cocMat)))
-                
-        }
-
+        
+    }
+    
     return(ECBlenght)
 }
 SLAPE.update_exon_attributes<-function(){
@@ -646,13 +655,13 @@ SLAPE.update_exon_attributes<-function(){
     
     print('     - Genome-wide list of HGNC coded genes: Download in progress...')
     HGNC_coded_Genes<-sort(unique(getBM(mart=EnsemblMart,attributes = c("ensembl_gene_id",
-                                                               "external_gene_name"),
-                               filters="with_hgnc",values = TRUE)[,2]))
+                                                                        "external_gene_name"),
+                                        filters="with_hgnc",values = TRUE)[,2]))
     print('     + DONE!')
     
     ngenes<-length(HGNC_coded_Genes)
     nblocks<-floor(ngenes/100)
-
+    
     print('     - Downloading exon attributes...')
     
     pb<-txtProgressBar(min = 0, max = nblocks+1, initial = 0,style = 3)
@@ -663,7 +672,7 @@ SLAPE.update_exon_attributes<-function(){
                                                             "external_gene_name",
                                                             "exon_chrom_start",
                                                             "exon_chrom_end"),
-                                           filters="hgnc_symbol",values = HGNC_coded_Genes[(100*(i-1)+1):(100*i)])
+                            filters="hgnc_symbol",values = HGNC_coded_Genes[(100*(i-1)+1):(100*i)])
         
         if (i==1){
             ExonAttributes<-currentExons
@@ -726,10 +735,10 @@ SLAPE.update_HGNC_Table<-function(){
             if(flag){
                 updated.hgnc.table<-currentChunk
                 flag<-FALSE
-                }else{
-                    updated.hgnc.table<-rbind(updated.hgnc.table,currentChunk)
-                    }
+            }else{
+                updated.hgnc.table<-rbind(updated.hgnc.table,currentChunk)
             }
+        }
         
     }
     close(pb)
@@ -845,12 +854,12 @@ SLAPE.heuristic_mut_ex_sorting<-function(mutPatterns){
         return(FINALMAT)
     }
 }
-SLAPE.diff_SLAPE_analysis<-function(wBEM,contrastMatrix,positiveCondition,negativeCondition,
-                                   show_progress=TRUE,display=TRUE,
-                                   correctionMethod='fdr',path_probability='Bernoulli',
-                                   NSAMPLES=1,NGENES=1,accExLength=TRUE,
-                                   BACKGROUNDpopulation=NULL,
-                                   PATH_COLLECTION,SLAPE.FDRth=5){
+SLAPE.diff_SLAPE_analysis<-function(EM,contrastMatrix,positiveCondition,negativeCondition,
+                                    show_progress=TRUE,display=TRUE,
+                                    correctionMethod='fdr',path_probability='Bernoulli',
+                                    NSAMPLES=1,NGENES=1,accExLength=TRUE,
+                                    BACKGROUNDpopulation=NULL,
+                                    PATH_COLLECTION,SLAPE.FDRth=5){
     
     
     
@@ -863,32 +872,32 @@ SLAPE.diff_SLAPE_analysis<-function(wBEM,contrastMatrix,positiveCondition,negati
     
     if(length(negativeCondition)==1){
         negativeSamples<-names(which(contrastMatrix[,negativeCondition]==1))
-    
+        
     }else{
         negativeSamples<-names(which(rowSums(contrastMatrix[,negativeCondition])==1))
         negativeCondition<-paste(negativeCondition,collapse=', ')
     }
     
     
-    positiveSamples<-intersect(positiveSamples,colnames(wBEM))
-    negativeSamples<-intersect(negativeSamples,colnames(wBEM))
+    positiveSamples<-intersect(positiveSamples,colnames(EM))
+    negativeSamples<-intersect(negativeSamples,colnames(EM))
     
-    positiveBEM<-wBEM[,positiveSamples]
-    negativeBEM<-wBEM[,negativeSamples]
+    positiveEM<-EM[,positiveSamples]
+    negativeEM<-EM[,negativeSamples]
     
     print('Analizing positive population...')
-    positive_PFP<-SLAPE.Analyse(wBEM = positiveBEM,path_probability = path_probability,
+    positive_PFP<-SLAPE.Analyse(EM = positiveEM,path_probability = path_probability,
                                 GeneLenghts = GECOBLenghts,
-                  show_progress = TRUE,
-                  NSAMPLES = 0,
-                  NGENES = 0,
-                  BACKGROUNDpopulation = BACKGROUNDpopulation,
-                  PATH_COLLECTION = PATH_COLLECTION,
-                  correctionMethod = correctionMethod)
+                                show_progress = TRUE,
+                                NSAMPLES = 0,
+                                NGENES = 0,
+                                BACKGROUNDpopulation = BACKGROUNDpopulation,
+                                PATH_COLLECTION = PATH_COLLECTION,
+                                correctionMethod = correctionMethod)
     print('Done')
     
     print('Analizing negative population...')
-    negative_PFP<-SLAPE.Analyse(wBEM = negativeBEM,path_probability = path_probability,
+    negative_PFP<-SLAPE.Analyse(EM = negativeEM,path_probability = path_probability,
                                 show_progress = TRUE,GeneLenghts = GECOBLenghts,
                                 NSAMPLES = 0,
                                 NGENES = 0,
@@ -896,11 +905,11 @@ SLAPE.diff_SLAPE_analysis<-function(wBEM,contrastMatrix,positiveCondition,negati
                                 PATH_COLLECTION = PATH_COLLECTION,
                                 correctionMethod = correctionMethod)
     print('Done')
-
+    
     
     positive.enrichedP.id<-positive_PFP$pathway_id[which(positive_PFP$pathway_perc_fdr<SLAPE.FDRth)]
     negative.enrichedP.id<-negative_PFP$pathway_id[which(negative_PFP$pathway_perc_fdr<SLAPE.FDRth)]
-
+    
     allIDS<-union(positive.enrichedP.id,negative.enrichedP.id)
     
     positive.pvals<-positive_PFP$pathway_pvals[match(allIDS,positive_PFP$pathway_id)]
@@ -921,22 +930,22 @@ SLAPE.diff_SLAPE_analysis<-function(wBEM,contrastMatrix,positiveCondition,negati
     names(positiveFDR)<-ids
     names(negativeFDR)<-ids
     
-    positive_pathway_BEM<-positive_PFP$pathway_BEM[match(ids,positive_PFP$pathway_id),]
-    negative_pathway_BEM<-negative_PFP$pathway_BEM[match(ids,negative_PFP$pathway_id),]
+    positive_pathway_EM<-positive_PFP$pathway_EM[match(ids,positive_PFP$pathway_id),]
+    negative_pathway_EM<-negative_PFP$pathway_EM[match(ids,negative_PFP$pathway_id),]
     
-    d <- dist(t(positive_pathway_BEM),method = 'euclidean') # distance matrix
+    d <- dist(t(positive_pathway_EM),method = 'euclidean') # distance matrix
     fit <- hclust(d,method = 'complete')
-    positive_pathway_BEM<-
-        positive_pathway_BEM[,fit$labels[fit$order]]
+    positive_pathway_EM<-
+        positive_pathway_EM[,fit$labels[fit$order]]
     
-    d <- dist(t(negative_pathway_BEM),method = 'euclidean') # distance matrix
+    d <- dist(t(negative_pathway_EM),method = 'euclidean') # distance matrix
     fit <- hclust(d,method = 'complete')
-    negative_pathway_BEM<-
-        negative_pathway_BEM[,fit$labels[fit$order]]
+    negative_pathway_EM<-
+        negative_pathway_EM[,fit$labels[fit$order]]
     
     
-    COMPD<-cbind(positive_pathway_BEM,
-                 negative_pathway_BEM)
+    COMPD<-cbind(positive_pathway_EM,
+                 negative_pathway_EM)
     
     
     FDRs<-cbind(positiveFDR,negativeFDR)
@@ -947,17 +956,17 @@ SLAPE.diff_SLAPE_analysis<-function(wBEM,contrastMatrix,positiveCondition,negati
     currentNames<-PATHCOM_HUMAN$PATHWAY[as.numeric(rownames(FDRs))]
     suffixes<-rep('',length(currentNames))
     suffixes[which(str_length(currentNames)>50)]<-' ...'
-        
+    
     currentNames<-str_sub(currentNames,start = 1,end = 50)
     currentNames<-paste(currentNames,suffixes,sep='')
     rownames(FDRs)<-currentNames
-        
+    
     colnames(FDRs)<-c(positiveCondition,negativeCondition)
     
     rownames(COMPD)<-rownames(FDRs)
     
     
-    annotation_col = data.frame(SampleType = factor(c(rep(positiveCondition, ncol(positive_pathway_BEM)),rep(negativeCondition, ncol(negative_pathway_BEM)))))
+    annotation_col = data.frame(SampleType = factor(c(rep(positiveCondition, ncol(positive_pathway_EM)),rep(negativeCondition, ncol(negative_pathway_EM)))))
     rownames(annotation_col)<-colnames(COMPD)
     
     COMPD<-COMPD[c(1:30,(nrow(COMPD)-29):nrow(COMPD)),]
@@ -969,7 +978,7 @@ SLAPE.diff_SLAPE_analysis<-function(wBEM,contrastMatrix,positiveCondition,negati
     
     annotation_col = data.frame(CellType = factor(c(positiveCondition,negativeCondition)))
     rownames(annotation_col)<-colnames(FDRs)
-
+    
     
     if(display){
         pheatmap(FDRs,cluster_rows = FALSE,cluster_cols = FALSE,col=colorRampPalette(colors = c('black','purple'))(100),annotation_col=annotation_col,show_colnames = FALSE)
@@ -983,6 +992,51 @@ SLAPE.diff_SLAPE_analysis<-function(wBEM,contrastMatrix,positiveCondition,negati
     colnames(RES)[3]<-'Diff.SL.Enrich'
     
     return(RES)
-    }
+}
 
+SLAPE.vignette<-function(){
+    LungTSPvariants<-read.table('../../Data/SLAPenrich/externalData/supplementary_table_2.txt',sep='\t',header=TRUE,stringsAsFactors = FALSE)
     
+    GeneIds<-unique(LungTSPvariants$HUGO.Symbol)
+    GeneIds<-setdiff(GeneIds,'')
+    
+    SampleIds<-unique(LungTSPvariants$Tumor.ID)
+    SampleIds<-as.character(setdiff(SampleIds,NA))
+    
+    Dataset<-matrix(0,length(GeneIds),length(SampleIds),dimnames = list(GeneIds,SampleIds))
+    
+    
+    nvariants<-nrow(LungTSPvariants)
+    for (i in 1:nvariants){
+        sampleId<-as.character(LungTSPvariants$Tumor.ID[i])
+        geneId<-LungTSPvariants$HUGO.Symbol[i]
+        if (geneId!='' & sampleId!='NA'){
+            Dataset[geneId,sampleId]<-Dataset[geneId,sampleId]+1    
+        }
+    }
+    
+    
+    Dataset<-
+        SLAPE.check_and_fix_gs_Dataset(Dataset,updated.hgnc.table = updated.hgnc.table)
+    
+    ####to change
+    load('data/SLAPE.hgnc.table_20160210.Rdata')
+    load('data/SLAPE.20160211_MSigDB_KEGG_hugoUpdated.Rdata')
+    load("data/SLAPE.all_genes_exonic_content_block_lengths_ensemble_20160209.RData")
+    
+    
+    PFPw<-
+        SLAPE.analyse(EM = Dataset,PATH_COLLECTION = KEGG_PATH,
+                      show_progress = TRUE,
+                      NSAMPLES = 1,
+                      NGENES = 1,
+                      accExLength = TRUE,
+                      BACKGROUNDpopulation = rownames(Dataset),
+                      path_probability = 'Bernoulli',
+                      GeneLenghts = GECOBLenghts)
+    
+    SLAPE.write.table(PFP = PFPw,EM = Dataset,filename = "../../RESULTS/SLAPenrich/LungDS_KEGG_enrichments.csv",
+                      fdrth=5,exclcovth = 50,PATH_COLLECTION = KEGG_PATH,GeneLenghts = GECOBLenghts)
+    
+}
+
