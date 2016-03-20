@@ -2,7 +2,7 @@
 \alias{SLAPE.check_and_fix_gs_Dataset}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-SLAPE.check_and_fix_gs_Dataset
+Check and fixing genomic event dataset
 }
 \description{
 This function checks that the row names of a genomic dataset are actually updated official gene symbols approved by the HUGO Gene Nomenclature Committee (HGNC)

@@ -2,7 +2,7 @@
 \alias{SLAPE.readDataset}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-SLAPE.readDataset
+Reading genomic evant dataset
 }
 \description{
 This function reads an integer matrix from csv file and it stores it into an integer matrix.

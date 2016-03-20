@@ -258,6 +258,36 @@ SLAPE.update_HGNC_Table<-function(){
     updated.hgnc.table<-data.frame(updated.hgnc.table)
     return(updated.hgnc.table)
 }
+SLAPE.gene_ecbl_length<-function(ExonAttributes,GENE){
+    
+    id<-which(is.element(ExonAttributes$external_gene_name,GENE))
+    
+    if (length(id)==1){
+        ECBlenght<-ExonAttributes$exon_chrom_end[id]-ExonAttributes$exon_chrom_start[id]+1
+    }else{
+        startPos<-ExonAttributes$exon_chrom_start[id]
+        endPos<-ExonAttributes$exon_chrom_end[id]
+        
+        minPos<-min(startPos)
+        maxPos<-max(endPos)
+        
+        span<-maxPos-minPos+1
+        
+        nsegments<-length(startPos)
+        
+        cocMat<-matrix(0,nsegments,span,dimnames = list(1:nsegments,as.character(minPos:maxPos)))
+        
+        for (i in 1:nsegments){
+            cocMat[i,as.character(startPos[i]:endPos[i])]<-1
+        }
+        
+        ECBlenght<-sum(sign(colSums(cocMat)))
+        
+    }
+    
+    return(ECBlenght)
+}
+
 
 #not documented
 SLAPE.analyse<-function(EM,
