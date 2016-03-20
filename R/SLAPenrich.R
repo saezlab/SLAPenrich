@@ -859,7 +859,7 @@ SLAPE.diff_SLAPE_analysis<-function(EM,contrastMatrix,positiveCondition,negative
                                     correctionMethod='fdr',path_probability='Bernoulli',
                                     NSAMPLES=1,NGENES=1,accExLength=TRUE,
                                     BACKGROUNDpopulation=NULL,
-                                    PATH_COLLECTION,SLAPE.FDRth=5){
+                                    PATH_COLLECTION,SLAPE.FDRth=5,PATH='./'){
     
     
     
@@ -886,7 +886,8 @@ SLAPE.diff_SLAPE_analysis<-function(EM,contrastMatrix,positiveCondition,negative
     negativeEM<-EM[,negativeSamples]
     
     print('Analizing positive population...')
-    positive_PFP<-SLAPE.Analyse(EM = positiveEM,path_probability = path_probability,
+    positive_PFP<-
+            SLAPE.analyse(EM = positiveEM,path_probability = path_probability,
                                 GeneLenghts = GECOBLenghts,
                                 show_progress = TRUE,
                                 NSAMPLES = 0,
@@ -897,7 +898,8 @@ SLAPE.diff_SLAPE_analysis<-function(EM,contrastMatrix,positiveCondition,negative
     print('Done')
     
     print('Analizing negative population...')
-    negative_PFP<-SLAPE.Analyse(EM = negativeEM,path_probability = path_probability,
+    negative_PFP<-
+            SLAPE.analyse(EM = negativeEM,path_probability = path_probability,
                                 show_progress = TRUE,GeneLenghts = GECOBLenghts,
                                 NSAMPLES = 0,
                                 NGENES = 0,
@@ -972,8 +974,10 @@ SLAPE.diff_SLAPE_analysis<-function(EM,contrastMatrix,positiveCondition,negative
     COMPD<-COMPD[c(1:30,(nrow(COMPD)-29):nrow(COMPD)),]
     
     if(display){
+        pdf(paste(PATH,'diffPathAlter.pdf',sep=''),10,10)
         pheatmap(COMPD,col=c('white','blue'),annotation_col = annotation_col,show_colnames = FALSE,
                  cluster_rows = FALSE,cluster_cols = FALSE)
+        dev.off()
     }
     
     annotation_col = data.frame(CellType = factor(c(positiveCondition,negativeCondition)))
@@ -981,9 +985,13 @@ SLAPE.diff_SLAPE_analysis<-function(EM,contrastMatrix,positiveCondition,negative
     
     
     if(display){
+        pdf(paste(PATH,'diffPathAlterHM.pdf',sep=''),10,10)
         pheatmap(FDRs,cluster_rows = FALSE,cluster_cols = FALSE,col=colorRampPalette(colors = c('black','purple'))(100),annotation_col=annotation_col,show_colnames = FALSE)
+        dev.off()
+        pdf(paste(PATH,'diffPathAlterBP.pdf',sep=''),10,10)
         par(mar=c(4,25,4,4))
         barplot(rev(FDRs[,1]-FDRs[,2]),horiz = TRUE,las=2,xlim=c(-7,7),cex.names = 0.7)
+        dev.off()
     }
     
     diffSLenrich<-FDRs[,1]-FDRs[,2]
@@ -1015,15 +1023,14 @@ SLAPE.vignette<-function(){
         }
     }
     
-    
-    Dataset<-
-        SLAPE.check_and_fix_gs_Dataset(Dataset,updated.hgnc.table = updated.hgnc.table)
-    
     ####to change
     load('data/SLAPE.hgnc.table_20160210.Rdata')
     load('data/SLAPE.20160211_MSigDB_KEGG_hugoUpdated.Rdata')
     load("data/SLAPE.all_genes_exonic_content_block_lengths_ensemble_20160209.RData")
     
+    
+    Dataset<-
+        SLAPE.check_and_fix_gs_Dataset(Dataset,updated.hgnc.table = updated.hgnc.table)
     
     PFPw<-
         SLAPE.analyse(EM = Dataset,PATH_COLLECTION = KEGG_PATH,
@@ -1037,6 +1044,26 @@ SLAPE.vignette<-function(){
     
     SLAPE.write.table(PFP = PFPw,EM = Dataset,filename = "../../RESULTS/SLAPenrich/LungDS_KEGG_enrichments.csv",
                       fdrth=5,exclcovth = 50,PATH_COLLECTION = KEGG_PATH,GeneLenghts = GECOBLenghts)
+    
+    load('data/caseStudy_clinicalInfos.Rdata')
+    load('data/SLAPE.20140608_PATHCOM_HUMAN_nonredundant_intersection_hugoUpdated.Rdata')
+    
+    RES<-
+        SLAPE.diff_SLAPE_analysis(EM = Dataset,contrastMatrix = CLINIC_MAT,
+                                  BACKGROUNDpopulation = rownames(Dataset),
+                                  SLAPE.FDRth = 5,display = TRUE,
+                                  positiveCondition = 'SS_CurrentSmoker',
+                                  negativeCondition = 'SS_Never',
+                                  PATH_COLLECTION = PATHCOM_HUMAN,
+                                  PATH = 'temp.results/')
+    
+    RES1<-SLAPE.diff_SLAPE_analysis(EM = Dataset,contrastMatrix = CLINIC_MAT,
+                                    BACKGROUNDpopulation = rownames(Dataset),
+                                    SLAPE.FDRth = 5,display = FALSE,
+                                    positiveCondition = "BAC_Type_nonMucinous",
+                                    negativeCondition = "BAC_Type_Mucinous",
+                                    PATH_COLLECTION = PATHCOM_HUMAN,
+                                    PATH = 'temp.results/')
     
 }
 
