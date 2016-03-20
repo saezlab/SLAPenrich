@@ -1,12 +1,50 @@
 \name{SLAPE.readDataset}
-\alias{hello}
-\title{Hello, World!}
-\usage{
-hello()
+\alias{SLAPE.readDataset}
+%- Also NEED an '\alias' for EACH other topic documented here.
+\title{
+SLAPE.readDataset
 }
 \description{
-Prints 'Hello, world!'.
+This function reads an integer matrix from csv file and it stores it into an integer matrix.
+Row names of this matrix are official gene symbols and column names are sample identifiers.
+A non-null entry in the i,j position indicates the presence of a somatic mutation hosted by the i-th gene in the j-th sample
+(if the matrix is binary) or the number of point mutations hosted by the i-th gene in the j-th sample (if the matrix contains integers).
+}
+\usage{
+SLAPE.readDataset(filename)
+}
+%- maybe also 'usage' for other objects documented here.
+\arguments{
+  \item{filename}{
+The path of the csv file to be read and stored in the genomic event matrix.
+}
+}
+\details{
+%%  ~~ If necessary, more details than the description above ~~
+}
+\value{
+An integer matrix modeling a genomic event dataset. Row names of this matrix are official gene symbols and column names are sample identifiers.
+A non-null entry in the i,j position indicates the presence of a somatic mutation hosted by the i-th gene in the j-th sample
+(if the matrix is binary) or the number of point mutations hosted by the i-th gene in the j-th sample (if the matrix contains integers).
+}
+\references{
+%% ~put references to the literature/web site here ~
+}
+\author{
+Francesco Iorio - iorio@ebi.ac.uk
+}
+\note{
+%%  ~~further notes~~
+}
+
+%% ~Make other sections like Warning with \section{Warning }{....} ~
+
+\seealso{
+%% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-SLAPE.readDataset('Ucazz')
+
 }
+% Add one or more standard keywords, see file 'KEYWORDS' in the
+% R documentation directory.
+\keyword{data-management}

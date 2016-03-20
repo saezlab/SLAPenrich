@@ -16,12 +16,12 @@ export(SLAPE.update_exon_attributes)
 
 export(SLAPE.compute_gene_exon_content_block_lengths)
 
-
+import('HGNChelper')
 
 #import('stringr')
 #import('poibin')
 #import('pheatmap')
 #import('qvalue')
 #import('biomaRt')
-#import('HGNChelper')
+
 #import('igraph')

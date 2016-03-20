@@ -8,11 +8,12 @@
 #   Check Package:             'Cmd + Shift + E'
 #   Test Package:              'Cmd + Shift + T'
 
+
+#internal functions
 SLE.hypTest<-function(x,k,n,N){
     PVALS<-phyper(x-1,n,N-n,k,lower.tail=FALSE)
     return(PVALS)
 }
-
 SLE.rearrangeMatrix<-function(patterns,GENES){
     
     remainingSamples<-colnames(patterns)
@@ -169,6 +170,8 @@ SLE.plotMyHeat <- function(x,orPlot,verdata,filename) {
     dev.off()
 }
 
+#exported functions
+#documented
 SLAPE.readDataset<-function(filename){
     fc<-as.matrix(read.csv(filename,row.names=1))
     fc[is.na(fc)]<-0
@@ -200,6 +203,63 @@ SLAPE.check_and_fix_gs_Dataset<-function(Dataset,updated.hgnc.table){
     
     return(Dataset)
 }
+SLAPE.update_HGNC_Table<-function(){
+    print('Downloading updated table from genaname.org')
+    day<-Sys.time()
+    day<-str_split(day,' ')[[1]][1]
+    fn<-paste('externalData/hgnc_complete_set_',day,'.txt',sep='')
+    download.file("ftp://ftp.ebi.ac.uk/pub/databases/genenames/new/tsv/hgnc_complete_set.txt",
+                  destfile = fn)
+    
+    fc <- file(fn)
+    mylist <- str_split(readLines(fc), "\t")
+    close(fc)
+    
+    mylist<-mylist[2:length(mylist)]
+    
+    ngenes<-length(mylist)
+    
+    flag<-TRUE
+    print('Updating HGNC table...')
+    pb<-txtProgressBar(min = 0, max = ngenes, initial = 0,style = 3)
+    
+    for (i in 1:ngenes){
+        setTxtProgressBar(pb,i)
+        if(length(grep('withdrawn',mylist[[i]]))==0){
+            currentApprovedSymbol<-mylist[[i]][2]
+            currentAlias<-mylist[[i]][9]
+            currentAlias<-setdiff(unlist(str_split(currentAlias,'"')),'')
+            currentAlias<-unlist(str_split(currentAlias,'[|]'))
+            
+            currentPrevSymbol<-mylist[[i]][11]
+            currentPrevSymbol<-setdiff(unlist(str_split(currentPrevSymbol,'"')),'')
+            currentPrevSymbol<-unlist(str_split(currentPrevSymbol,'[|]'))
+            
+            prevSymbAndAliases<-c(currentApprovedSymbol,currentAlias,currentPrevSymbol)
+            
+            currentChunk<-cbind(sort(prevSymbAndAliases),rep(currentApprovedSymbol,length(prevSymbAndAliases)))
+            
+            if(flag){
+                updated.hgnc.table<-currentChunk
+                flag<-FALSE
+            }else{
+                updated.hgnc.table<-rbind(updated.hgnc.table,currentChunk)
+            }
+        }
+        
+    }
+    close(pb)
+    print('DONE!')
+    
+    colnames(updated.hgnc.table)<-c("Symbol","Approved.Symbol")
+    rownames(updated.hgnc.table)<-as.character(1:nrow(updated.hgnc.table))
+    
+    
+    updated.hgnc.table<-data.frame(updated.hgnc.table)
+    return(updated.hgnc.table)
+}
+
+#not documented
 SLAPE.analyse<-function(EM,
                         show_progress=TRUE,
                         correctionMethod='fdr',
@@ -619,7 +679,7 @@ SLAPE.core_components<-function(PFP,EM,PATH='./',fdrth=Inf,exclcovth=0,PATH_COLL
     Sys.sleep(1)
     close(pb)
 }
-SLAPE.gene_ecbl_ength<-function(ExonAttributes,GENE){
+SLAPE.gene_ecbl_length<-function(ExonAttributes,GENE){
     
     id<-which(is.element(ExonAttributes$external_gene_name,GENE))
     
@@ -695,61 +755,6 @@ SLAPE.update_exon_attributes<-function(){
     
     print("DONE!")
     return(ExonAttributes)
-}
-SLAPE.update_HGNC_Table<-function(){
-    print('Downloading updated table from genaname.org')
-    day<-Sys.time()
-    day<-str_split(day,' ')[[1]][1]
-    fn<-paste('externalData/hgnc_complete_set_',day,'.txt',sep='')
-    download.file("ftp://ftp.ebi.ac.uk/pub/databases/genenames/new/tsv/hgnc_complete_set.txt",
-                  destfile = fn)
-    
-    fc <- file(fn)
-    mylist <- str_split(readLines(fc), "\t")
-    close(fc)
-    
-    mylist<-mylist[2:length(mylist)]
-    
-    ngenes<-length(mylist)
-    
-    flag<-TRUE
-    print('Updating HGNC table...')
-    pb<-txtProgressBar(min = 0, max = ngenes, initial = 0,style = 3)
-    
-    for (i in 1:ngenes){
-        setTxtProgressBar(pb,i)
-        if(length(grep('withdrawn',mylist[[i]]))==0){
-            currentApprovedSymbol<-mylist[[i]][2]
-            currentAlias<-mylist[[i]][9]
-            currentAlias<-setdiff(unlist(str_split(currentAlias,'"')),'')
-            currentAlias<-unlist(str_split(currentAlias,'[|]'))
-            
-            currentPrevSymbol<-mylist[[i]][11]
-            currentPrevSymbol<-setdiff(unlist(str_split(currentPrevSymbol,'"')),'')
-            currentPrevSymbol<-unlist(str_split(currentPrevSymbol,'[|]'))
-            
-            prevSymbAndAliases<-c(currentApprovedSymbol,currentAlias,currentPrevSymbol)
-            
-            currentChunk<-cbind(sort(prevSymbAndAliases),rep(currentApprovedSymbol,length(prevSymbAndAliases)))
-            
-            if(flag){
-                updated.hgnc.table<-currentChunk
-                flag<-FALSE
-            }else{
-                updated.hgnc.table<-rbind(updated.hgnc.table,currentChunk)
-            }
-        }
-        
-    }
-    close(pb)
-    print('DONE!')
-    
-    colnames(updated.hgnc.table)<-c("Symbol","Approved.Symbol")
-    rownames(updated.hgnc.table)<-as.character(1:nrow(updated.hgnc.table))
-    
-    
-    updated.hgnc.table<-data.frame(updated.hgnc.table)
-    return(updated.hgnc.table)
 }
 SLAPE.compute_gene_exon_content_block_lengths<-function(ExonAttributes){
     print("Updating Genome-Wide Exon content block lengths... please wait...")
