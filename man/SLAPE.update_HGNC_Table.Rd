@@ -5,8 +5,10 @@
 Updating the catalogue of approved gene symbols and synomyms
 }
 \description{
-This function creates a data frame containing up-to-date HUGO Gene Nomenclature Committee (HGNC) approved symbols and their synonyms downloading updated relevant information from the HUGO Gene Nomenclature Committee web-portal (http://www.genenames.org).
-This table is used by the \code{SLAPE.update_HGNC_Table} function to check and update the gene symbol identifiers of a integer genomic event matrix. A precomputed data frame is available in the \code{SLAPE.hgnc.table_20160210} data object.
+This function creates a data frame containing up-to-date HUGO Gene Nomenclature Committee (HGNC) approved symbols and their synonyms downloading updated relevant information from the HUGO Gene Nomenclature Committee web-portal (\url{http://www.genenames.org}).
+This table is used by the
+\code{\link{SLAPE.check_and_fix_gs_Dataset}} function to check and update the gene symbol identifiers of a integer genomic event matrix. A precomputed data frame is available in the
+\code{\link{SLAPE.hgnc.table_20160210}} data object.
 }
 \usage{
 SLAPE.update_HGNC_Table()
@@ -16,26 +18,22 @@ SLAPE.update_HGNC_Table()
 %%  ~~ If necessary, more details than the description above ~~
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+A data frame with updated approved HUGO gene symbols in one column and their previously approved synonyms in another column.
 }
 \references{
 %% ~put references to the literature/web site here ~
 }
 \author{
-%%  ~~who you are~~
+Francesco Iorio - iorio@ebi.ac.uk
 }
 \note{
-%%  ~~further notes~~
+
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+
 }
 \examples{
 

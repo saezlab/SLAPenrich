@@ -20,7 +20,8 @@ A non-null entry in the i,j position indicates the presence of a somatic mutatio
 }
   \item{updated.hgnc.table}{
     A data frame containing up-to-date approved HGNC symbols (Approved.Symbol variable) and their synonyms (Symbol variable). This is availalbe in the
-    \code{SLAPE.hgnc.table_20160210} data object or can be created by downloading updated relevant information from the HUGO Gene Nomenclature Committee web-portal (http://www.genenames.org), using the function \code{SLAPE.update_HGNC_Table}.
+    \code{\link{SLAPE.hgnc.table_20160210}}
+    data object or can be created by downloading updated relevant information from the HUGO Gene Nomenclature Committee web-portal (http://www.genenames.org), using the function \code{\link{SLAPE.update_HGNC_Table}}.
     
 }
 }

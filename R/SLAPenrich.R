@@ -287,9 +287,72 @@ SLAPE.gene_ecbl_length<-function(ExonAttributes,GENE){
     
     return(ECBlenght)
 }
-
-
-#not documented
+SLAPE.compute_gene_exon_content_block_lengths<-function(ExonAttributes){
+    print("Updating Genome-Wide Exon content block lengths... please wait...")
+    uniqueGS<-unique(ExonAttributes$external_gene_name)
+    ngenes<-length(uniqueGS)
+    
+    GECOBLenghts<-rep(NA,ngenes)
+    names(GECOBLenghts)<-uniqueGS[1:ngenes]
+    
+    pb<-txtProgressBar(min = 0, max = ngenes, initial = 0,style = 3)
+    
+    for (i in 1:ngenes){
+        setTxtProgressBar(pb,i)
+        GECOBLenghts[i]<-SLAPE.Gene_ECBLength(ExonAttributes,uniqueGS[i])
+    }
+    close(pb)
+    print("DONE!")
+    return(GECOBLenghts)
+}
+SLAPE.update_exon_attributes<-function(){
+    print("Updating Gene Exons Attributes... please wait...")
+    EnsemblMart = useEnsembl(biomart="ensembl",dataset = 'hsapiens_gene_ensembl')
+    
+    
+    print('     - Genome-wide list of HGNC coded genes: Download in progress...')
+    HGNC_coded_Genes<-sort(unique(getBM(mart=EnsemblMart,attributes = c("ensembl_gene_id",
+                                                                        "external_gene_name"),
+                                        filters="with_hgnc",values = TRUE)[,2]))
+    print('     + DONE!')
+    
+    ngenes<-length(HGNC_coded_Genes)
+    nblocks<-floor(ngenes/100)
+    
+    print('     - Downloading exon attributes...')
+    
+    pb<-txtProgressBar(min = 0, max = nblocks+1, initial = 0,style = 3)
+    
+    for (i in 1:nblocks){
+        setTxtProgressBar(pb,i)
+        currentExons<-getBM(mart=EnsemblMart,attributes = c("ensembl_gene_id",
+                                                            "external_gene_name",
+                                                            "exon_chrom_start",
+                                                            "exon_chrom_end"),
+                            filters="hgnc_symbol",values = HGNC_coded_Genes[(100*(i-1)+1):(100*i)])
+        
+        if (i==1){
+            ExonAttributes<-currentExons
+        }else{
+            ExonAttributes<-rbind(ExonAttributes,currentExons)   
+        }
+    }
+    
+    remainingGenes<-ngenes-nblocks*100
+    currentExons<-getBM(mart=EnsemblMart,attributes = c("ensembl_gene_id",
+                                                        "external_gene_name",
+                                                        "exon_chrom_start",
+                                                        "exon_chrom_end"),
+                        filters="hgnc_symbol",values = HGNC_coded_Genes[(100*i+1):(100*i+remainingGenes)])
+    
+    ExonAttributes<-rbind(ExonAttributes,currentExons)   
+    setTxtProgressBar(pb,i+1)
+    close(pb)
+    print('     - DONE!')
+    
+    print("DONE!")
+    return(ExonAttributes)
+}
 SLAPE.analyse<-function(EM,
                         show_progress=TRUE,
                         correctionMethod='fdr',
@@ -299,8 +362,8 @@ SLAPE.analyse<-function(EM,
                         BACKGROUNDpopulation=NULL,
                         PATH_COLLECTION,
                         path_probability='Bernoulli',
-                        GeneLenghts){
-    #####AGGIUNGERE RHO TRA I PARAMETRI e modificare la funzione sotto ###################
+                        GeneLenghts,RHO=NA){
+    
     if(length(BACKGROUNDpopulation)>0){
         if(length(which(duplicated(BACKGROUNDpopulation)))>0){
             warning('Duplicated gene names found in the background population')
@@ -393,7 +456,12 @@ SLAPE.analyse<-function(EM,
                 pathway_EM[i,j]<-sign(sum(EM[currentGeneSet,j]))
             }
             
-            rho<-k/N
+            rho<-RHO
+            
+            if (is.na(rho)){
+                rho<-k/N    
+            }
+            
             
             if (path_probability=='Bernoulli'){
                 pathway_Probability[i,j]<-1-exp(-rho*n)    
@@ -463,6 +531,11 @@ SLAPE.analyse<-function(EM,
     
     cat('\nDone!...\n')
     
+    names(pathway_pvals)<-names(pathway_logOddRatios)
+    names(pathway_perc_fdr)<-names(pathway_logOddRatios)
+    names(pathwayExclusive_coverage)<-names(pathway_logOddRatios)
+    names(pathway_individualEMs)<-names(pathway_logOddRatios)
+    
     return(list(pathway_id=pathway_id,
                 pathway_EM=pathway_EM,
                 pathway_Probability=pathway_Probability,
@@ -473,6 +546,7 @@ SLAPE.analyse<-function(EM,
                 pathway_exclusiveCoverage=pathwayExclusive_coverage,
                 pathway_individualEMs=pathway_individualEMs))
 }
+
 SLAPE.write.table<-function(PFP,EM,filename='',fdrth=Inf,exclcovth=0,PATH_COLLECTION,GeneLenghts){
     
     id<-which(PFP$pathway_exclusiveCoverage>exclcovth & PFP$pathway_perc_fdr<fdrth)
@@ -540,21 +614,106 @@ SLAPE.write.table<-function(PFP,EM,filename='',fdrth=Inf,exclcovth=0,PATH_COLLEC
     
     write.csv(totres,file=filename,quote=FALSE,row.names=FALSE)
 }
-SLAPE.pathvis<-function(EM,PFP,Id,i=NULL,PATH='./',PATH_COLLECTION){
+SLAPE.heuristic_mut_ex_sorting<-function(mutPatterns){
+    
+    mutPatterns<-sign(mutPatterns)
+    
+    if(dim(mutPatterns)[1]==1){
+        mutPatterns<-matrix(c(mutPatterns[,order(mutPatterns,decreasing=TRUE)]),
+                            1,ncol(mutPatterns),
+                            dimnames = list(rownames(mutPatterns),colnames(mutPatterns)))
+        
+        return(mutPatterns)
+    }
+    
+    if(dim(mutPatterns)[2]==1){
+        mutPatterns<-matrix(c(mutPatterns[order(mutPatterns,decreasing=TRUE),]),
+                            nrow(mutPatterns),1,
+                            dimnames = list(rownames(mutPatters),colnames(mutPatterns)))
+        return(mutPatterns)
+    }
+    
+    nsamples<-ncol(mutPatterns)
+    
+    coveredGenes<-NA
+    uncoveredGenes<-rownames(mutPatterns)
+    
+    if (length(uncoveredGenes)>1){
+        
+        idNull<-which(colSums(mutPatterns)==0)
+        nullCol<-matrix(c(mutPatterns[,idNull]),nrow(mutPatterns),length(idNull),dimnames = list(rownames(mutPatterns),colnames(mutPatterns)[idNull]))
+        
+        idNonNull<-which(colSums(mutPatterns)>0)
+        mutPatterns<-matrix(c(mutPatterns[,idNonNull]),nrow(mutPatterns),length(idNonNull),dimnames=list(rownames(mutPatterns),colnames(mutPatterns)[idNonNull]))
+        
+        coveredSamples<-NA
+        uncoveredSamples<-colnames(mutPatterns)
+        BS<-NA
+        
+        while(length(uncoveredGenes)>0 & length(uncoveredSamples)>0){
+            
+            patterns<-matrix(c(mutPatterns[uncoveredGenes,uncoveredSamples]),
+                             nrow = length(uncoveredGenes),
+                             ncol = length(uncoveredSamples),
+                             dimnames = list(uncoveredGenes,uncoveredSamples))
+            
+            if(length(uncoveredGenes)>1){
+                bestInClass<-SLE.findBestInClass(patterns)
+            }else{
+                bestInClass<-uncoveredGenes
+            }
+            
+            if(is.na(BS[1])){
+                BS<-bestInClass
+            }else{
+                BS<-c(BS,bestInClass)
+            }
+            
+            if(is.na(coveredGenes[1])){
+                coveredGenes<-bestInClass
+            }else{
+                coveredGenes<-c(coveredGenes,bestInClass)
+            }
+            
+            uncoveredGenes<-setdiff(uncoveredGenes,coveredGenes)
+            toCheck<-matrix(c(patterns[bestInClass,uncoveredSamples]),nrow = 1,ncol=ncol(patterns),dimnames = list(bestInClass,uncoveredSamples))
+            
+            if (length(coveredGenes)==1){
+                coveredSamples<-names(which(colSums(toCheck)>0))
+            }else{
+                coveredSamples<-c(coveredSamples,names(which(colSums(toCheck)>0)))
+            }
+            
+            uncoveredSamples<-setdiff(uncoveredSamples,coveredSamples)
+            
+        }
+        
+        BS<-c(BS,uncoveredGenes)
+        
+        CID<-SLE.rearrangeMatrix(mutPatterns,BS)
+        
+        FINALMAT<-mutPatterns[BS,CID]
+        
+        FINALMAT<-cbind(FINALMAT,nullCol[rownames(FINALMAT),])
+        
+        return(FINALMAT)
+    }
+}
+SLAPE.pathvis<-function(EM,PFP,Id,prefName=NULL,PATH='./',PATH_COLLECTION){
     
     genes<-PATH_COLLECTION$HGNC_SYMBOL[[Id]]
     
     nGenesInPath<-length(genes)
     genes<-intersect(genes,rownames(EM))
     
-    fn<-paste(PATH,i,'_',Id,'_a.pdf',sep='')
+    fn<-paste(PATH,prefName,'_',Id,'_a.pdf',sep='')
     
     toPlot<-matrix(c(EM[genes,]),nrow = length(genes),ncol = ncol(EM),dimnames = list(genes,colnames(EM)))
     
     Pid<-which(PFP$pathway_id==Id)
     
     toPlot<-
-        SLAPE.HeuristicMutExSorting(toPlot)
+        SLAPE.heuristic_mut_ex_sorting(toPlot)
     
     FDR<-PFP$pathway_perc_fdr[which(PFP$pathway_id==Id)]
     
@@ -577,7 +736,7 @@ SLAPE.pathvis<-function(EM,PFP,Id,i=NULL,PATH='./',PATH_COLLECTION){
              legend_labels=c('wt','mut'),
              main=MAIN)
     
-    pdf(paste(PATH,i,'_',PFP$pathway_id[Pid],'_bars.pdf',sep=''))
+    pdf(paste(PATH,prefName,'_',PFP$pathway_id[Pid],'_bars.pdf',sep=''))
     
     par(mfrow=c(3,1))
     
@@ -599,6 +758,8 @@ SLAPE.pathvis<-function(EM,PFP,Id,i=NULL,PATH='./',PATH_COLLECTION){
     
     dev.off()
 }
+
+
 SLAPE.serialPathVis<-function(EM,PFP,fdrth=5,exCovTh=50,PATH='./',PATH_COLLECTION){
     Ids<-which(PFP$pathway_perc_fdr<fdrth & PFP$pathway_exclusiveCoverage>exCovTh)
     
@@ -613,7 +774,7 @@ SLAPE.serialPathVis<-function(EM,PFP,fdrth=5,exCovTh=50,PATH='./',PATH_COLLECTIO
         for (i in 1:length(Ids)){
             
             setTxtProgressBar(pb, i)
-            SLAPE.pathVis(EM = EM,PFP = PFP,i = i,Id = PFP$pathway_id[Ids[i]],PATH = PATH,PATH_COLLECTION = PATH_COLLECTION)
+            SLAPE.pathvis(EM = EM,PFP = PFP,prefName = i,Id = PFP$pathway_id[Ids[i]],PATH = PATH,PATH_COLLECTION = PATH_COLLECTION)
         }
         Sys.sleep(1)
         close(pb)
@@ -709,186 +870,7 @@ SLAPE.core_components<-function(PFP,EM,PATH='./',fdrth=Inf,exclcovth=0,PATH_COLL
     Sys.sleep(1)
     close(pb)
 }
-SLAPE.gene_ecbl_length<-function(ExonAttributes,GENE){
-    
-    id<-which(is.element(ExonAttributes$external_gene_name,GENE))
-    
-    if (length(id)==1){
-        ECBlenght<-ExonAttributes$exon_chrom_end[id]-ExonAttributes$exon_chrom_start[id]+1
-    }else{
-        startPos<-ExonAttributes$exon_chrom_start[id]
-        endPos<-ExonAttributes$exon_chrom_end[id]
-        
-        minPos<-min(startPos)
-        maxPos<-max(endPos)
-        
-        span<-maxPos-minPos+1
-        
-        nsegments<-length(startPos)
-        
-        cocMat<-matrix(0,nsegments,span,dimnames = list(1:nsegments,as.character(minPos:maxPos)))
-        
-        for (i in 1:nsegments){
-            cocMat[i,as.character(startPos[i]:endPos[i])]<-1
-        }
-        
-        ECBlenght<-sum(sign(colSums(cocMat)))
-        
-    }
-    
-    return(ECBlenght)
-}
-SLAPE.update_exon_attributes<-function(){
-    print("Updating Gene Exons Attributes... please wait...")
-    EnsemblMart = useEnsembl(biomart="ensembl",dataset = 'hsapiens_gene_ensembl')
-    
-    
-    print('     - Genome-wide list of HGNC coded genes: Download in progress...')
-    HGNC_coded_Genes<-sort(unique(getBM(mart=EnsemblMart,attributes = c("ensembl_gene_id",
-                                                                        "external_gene_name"),
-                                        filters="with_hgnc",values = TRUE)[,2]))
-    print('     + DONE!')
-    
-    ngenes<-length(HGNC_coded_Genes)
-    nblocks<-floor(ngenes/100)
-    
-    print('     - Downloading exon attributes...')
-    
-    pb<-txtProgressBar(min = 0, max = nblocks+1, initial = 0,style = 3)
-    
-    for (i in 1:nblocks){
-        setTxtProgressBar(pb,i)
-        currentExons<-getBM(mart=EnsemblMart,attributes = c("ensembl_gene_id",
-                                                            "external_gene_name",
-                                                            "exon_chrom_start",
-                                                            "exon_chrom_end"),
-                            filters="hgnc_symbol",values = HGNC_coded_Genes[(100*(i-1)+1):(100*i)])
-        
-        if (i==1){
-            ExonAttributes<-currentExons
-        }else{
-            ExonAttributes<-rbind(ExonAttributes,currentExons)   
-        }
-    }
-    
-    remainingGenes<-ngenes-nblocks*100
-    currentExons<-getBM(mart=EnsemblMart,attributes = c("ensembl_gene_id",
-                                                        "external_gene_name",
-                                                        "exon_chrom_start",
-                                                        "exon_chrom_end"),
-                        filters="hgnc_symbol",values = HGNC_coded_Genes[(100*i+1):(100*i+remainingGenes)])
-    
-    ExonAttributes<-rbind(ExonAttributes,currentExons)   
-    setTxtProgressBar(pb,i+1)
-    close(pb)
-    print('     - DONE!')
-    
-    print("DONE!")
-    return(ExonAttributes)
-}
-SLAPE.compute_gene_exon_content_block_lengths<-function(ExonAttributes){
-    print("Updating Genome-Wide Exon content block lengths... please wait...")
-    uniqueGS<-unique(ExonAttributes$external_gene_name)
-    ngenes<-length(uniqueGS)
-    
-    GECOBLenghts<-rep(NA,ngenes)
-    names(GECOBLenghts)<-uniqueGS[1:ngenes]
-    
-    pb<-txtProgressBar(min = 0, max = ngenes, initial = 0,style = 3)
-    
-    for (i in 1:ngenes){
-        setTxtProgressBar(pb,i)
-        GECOBLenghts[i]<-SLAPE.Gene_ECBLength(ExonAttributes,uniqueGS[i])
-    }
-    close(pb)
-    print("DONE!")
-    return(GECOBLenghts)
-}
-SLAPE.heuristic_mut_ex_sorting<-function(mutPatterns){
-    
-    mutPatterns<-sign(mutPatterns)
-    
-    if(dim(mutPatterns)[1]==1){
-        mutPatterns<-matrix(c(mutPatterns[,order(mutPatterns,decreasing=TRUE)]),
-                            1,ncol(mutPatterns),
-                            dimnames = list(rownames(mutPatterns),colnames(mutPatterns)))
-        
-        return(mutPatterns)
-    }
-    
-    if(dim(mutPatterns)[2]==1){
-        mutPatterns<-matrix(c(mutPatterns[order(mutPatterns,decreasing=TRUE),]),
-                            nrow(mutPatterns),1,
-                            dimnames = list(rownames(mutPatters),colnames(mutPatterns)))
-        return(mutPatterns)
-    }
-    
-    nsamples<-ncol(mutPatterns)
-    
-    coveredGenes<-NA
-    uncoveredGenes<-rownames(mutPatterns)
-    
-    if (length(uncoveredGenes)>1){
-        
-        idNull<-which(colSums(mutPatterns)==0)
-        nullCol<-matrix(c(mutPatterns[,idNull]),nrow(mutPatterns),length(idNull),dimnames = list(rownames(mutPatterns),colnames(mutPatterns)[idNull]))
-        
-        idNonNull<-which(colSums(mutPatterns)>0)
-        mutPatterns<-matrix(c(mutPatterns[,idNonNull]),nrow(mutPatterns),length(idNonNull),dimnames=list(rownames(mutPatterns),colnames(mutPatterns)[idNonNull]))
-        
-        coveredSamples<-NA
-        uncoveredSamples<-colnames(mutPatterns)
-        BS<-NA
-        
-        while(length(uncoveredGenes)>0 & length(uncoveredSamples)>0){
-            
-            patterns<-matrix(c(mutPatterns[uncoveredGenes,uncoveredSamples]),
-                             nrow = length(uncoveredGenes),
-                             ncol = length(uncoveredSamples),
-                             dimnames = list(uncoveredGenes,uncoveredSamples))
-            
-            if(length(uncoveredGenes)>1){
-                bestInClass<-SLE.findBestInClass(patterns)
-            }else{
-                bestInClass<-uncoveredGenes
-            }
-            
-            if(is.na(BS[1])){
-                BS<-bestInClass
-            }else{
-                BS<-c(BS,bestInClass)
-            }
-            
-            if(is.na(coveredGenes[1])){
-                coveredGenes<-bestInClass
-            }else{
-                coveredGenes<-c(coveredGenes,bestInClass)
-            }
-            
-            uncoveredGenes<-setdiff(uncoveredGenes,coveredGenes)
-            toCheck<-matrix(c(patterns[bestInClass,uncoveredSamples]),nrow = 1,ncol=ncol(patterns),dimnames = list(bestInClass,uncoveredSamples))
-            
-            if (length(coveredGenes)==1){
-                coveredSamples<-names(which(colSums(toCheck)>0))
-            }else{
-                coveredSamples<-c(coveredSamples,names(which(colSums(toCheck)>0)))
-            }
-            
-            uncoveredSamples<-setdiff(uncoveredSamples,coveredSamples)
-            
-        }
-        
-        BS<-c(BS,uncoveredGenes)
-        
-        CID<-SLE.rearrangeMatrix(mutPatterns,BS)
-        
-        FINALMAT<-mutPatterns[BS,CID]
-        
-        FINALMAT<-cbind(FINALMAT,nullCol[rownames(FINALMAT),])
-        
-        return(FINALMAT)
-    }
-}
+
 SLAPE.diff_SLAPE_analysis<-function(EM,contrastMatrix,positiveCondition,negativeCondition,
                                     show_progress=TRUE,display=TRUE,
                                     correctionMethod='fdr',path_probability='Bernoulli',
@@ -922,25 +904,25 @@ SLAPE.diff_SLAPE_analysis<-function(EM,contrastMatrix,positiveCondition,negative
     
     print('Analizing positive population...')
     positive_PFP<-
-            SLAPE.analyse(EM = positiveEM,path_probability = path_probability,
-                                GeneLenghts = GECOBLenghts,
-                                show_progress = TRUE,
-                                NSAMPLES = 0,
-                                NGENES = 0,
-                                BACKGROUNDpopulation = BACKGROUNDpopulation,
-                                PATH_COLLECTION = PATH_COLLECTION,
-                                correctionMethod = correctionMethod)
+        SLAPE.analyse(EM = positiveEM,path_probability = path_probability,
+                      GeneLenghts = GECOBLenghts,
+                      show_progress = TRUE,
+                      NSAMPLES = 0,
+                      NGENES = 0,
+                      BACKGROUNDpopulation = BACKGROUNDpopulation,
+                      PATH_COLLECTION = PATH_COLLECTION,
+                      correctionMethod = correctionMethod)
     print('Done')
     
     print('Analizing negative population...')
     negative_PFP<-
-            SLAPE.analyse(EM = negativeEM,path_probability = path_probability,
-                                show_progress = TRUE,GeneLenghts = GECOBLenghts,
-                                NSAMPLES = 0,
-                                NGENES = 0,
-                                BACKGROUNDpopulation = BACKGROUNDpopulation,
-                                PATH_COLLECTION = PATH_COLLECTION,
-                                correctionMethod = correctionMethod)
+        SLAPE.analyse(EM = negativeEM,path_probability = path_probability,
+                      show_progress = TRUE,GeneLenghts = GECOBLenghts,
+                      NSAMPLES = 0,
+                      NGENES = 0,
+                      BACKGROUNDpopulation = BACKGROUNDpopulation,
+                      PATH_COLLECTION = PATH_COLLECTION,
+                      correctionMethod = correctionMethod)
     print('Done')
     
     
@@ -1037,6 +1019,10 @@ SLAPE.diff_SLAPE_analysis<-function(EM,contrastMatrix,positiveCondition,negative
     return(RES)
 }
 
+
+
+#not documented
+
 SLAPE.vignette<-function(){
     LungTSPvariants<-read.table('../../Data/SLAPenrich/externalData/supplementary_table_2.txt',sep='\t',header=TRUE,stringsAsFactors = FALSE)
     
@@ -1076,6 +1062,10 @@ SLAPE.vignette<-function(){
                       BACKGROUNDpopulation = rownames(Dataset),
                       path_probability = 'Bernoulli',
                       GeneLenghts = GECOBLenghts)
+    
+    SLAPE.pathvis(EM = Dataset,PFP = PFPw,Id = PFPw$pathway_id[which(PFPw$pathway_exclusiveCoverage>80)[1]],
+                  PATH = './',PATH_COLLECTION = KEGG_PATH)
+    
     
     SLAPE.write.table(PFP = PFPw,EM = Dataset,filename = "../../RESULTS/SLAPenrich/LungDS_KEGG_enrichments.csv",
                       fdrth=5,exclcovth = 50,PATH_COLLECTION = KEGG_PATH,GeneLenghts = GECOBLenghts)
