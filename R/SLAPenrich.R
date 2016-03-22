@@ -909,7 +909,8 @@ SLAPE.diff_SLAPE_analysis<-function(EM,contrastMatrix,positiveCondition,negative
                       NGENES = 0,
                       BACKGROUNDpopulation = BACKGROUNDpopulation,
                       PATH_COLLECTION = PATH_COLLECTION,
-                      correctionMethod = correctionMethod)
+                      correctionMethod = correctionMethod,
+                      show_progress = show_progress)
     print('Done')
     
     print('Analizing negative population...')
@@ -920,7 +921,8 @@ SLAPE.diff_SLAPE_analysis<-function(EM,contrastMatrix,positiveCondition,negative
                       NGENES = 0,
                       BACKGROUNDpopulation = BACKGROUNDpopulation,
                       PATH_COLLECTION = PATH_COLLECTION,
-                      correctionMethod = correctionMethod)
+                      correctionMethod = correctionMethod,
+                      show_progress = show_progress)
     print('Done')
     
     
