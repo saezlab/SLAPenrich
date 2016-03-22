@@ -15,7 +15,9 @@ SLAPE.diff_SLAPE_analysis(EM, contrastMatrix,
                           path_probability = "Bernoulli",
                           NSAMPLES = 1, NGENES = 1,
                           accExLength = TRUE,
-                          BACKGROUNDpopulation = NULL, PATH_COLLECTION,
+                          BACKGROUNDpopulation = NULL,
+                          GeneLenghts,
+                          PATH_COLLECTION,
                           SLAPE.FDRth = 5, PATH = "./")
 }
 %- maybe also 'usage' for other objects documented here.
@@ -59,6 +61,12 @@ SLAPE.diff_SLAPE_analysis(EM, contrastMatrix,
 }
   \item{BACKGROUNDpopulation}{
  A string vector containing the official HUGO symbols of the gene background population used to compute the sample-wise pathway alteration probabilities in the two individual SLAPenrich analyses (therefore \code{SLAPE.analyse} calls). If \code{NULL} (default) then the population of all the genes included in at least one pathway of the collection specified in the \code{PATH_COLLECTION} parameter
+}
+  \item{GeneLenghts}{
+    A named vector containing the genome-wide total exonic block lengths to be used in the two individual SLAPenrich analyses (therefore \code{SLAPE.analyse} calls).Names of this vector are official HUGO gene symbol. This is available in the
+        \code{\link{SLAPE.all_genes_exonic_content_block_lengths_ensemble_20160209 object}}.
+        An updated version of this vector can be assembled using the
+        \code{\link{SLAPE.compute_gene_exon_content_block_lengths}} function.
 }
   \item{PATH_COLLECTION}{
     A list containing the pathway collection to be tested on the \code{EM} dataset for alteration enrichments at the sample population level,
@@ -112,7 +120,7 @@ data(LUAD_CaseStudy_updatedGS)
 
 #Loading KEGG pathway gene-set collection data object
 data(
-SLAPE.20140608_PATHCOM_HUMAN_nonredundant_intersection_hugoUpdated)
+    SLAPE.20140608_PATHCOM_HUMAN_nonredundant_intersection_hugoUpdated)
 
 #Loading genome-wide total exonic block lengths
 data(SLAPE.all_genes_exonic_content_block_lengths_ensemble_20160209)
@@ -131,6 +139,7 @@ RES<-
                               positiveCondition = 'SS_CurrentSmoker',
                               negativeCondition = 'SS_Never',
                               PATH_COLLECTION = PATHCOM_HUMAN,
+                              GeneLenghts = GECOBLenghts,
                               PATH = './')
 
 #Showing the top-10 most differentially enriched pathways in the Smokers population

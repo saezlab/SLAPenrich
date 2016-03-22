@@ -758,8 +758,6 @@ SLAPE.pathvis<-function(EM,PFP,Id,prefName=NULL,PATH='./',PATH_COLLECTION){
     
     dev.off()
 }
-
-
 SLAPE.serialPathVis<-function(EM,PFP,fdrth=5,exCovTh=50,PATH='./',PATH_COLLECTION){
     Ids<-which(PFP$pathway_perc_fdr<fdrth & PFP$pathway_exclusiveCoverage>exCovTh)
     
@@ -875,7 +873,7 @@ SLAPE.diff_SLAPE_analysis<-function(EM,contrastMatrix,positiveCondition,negative
                                     show_progress=TRUE,display=TRUE,
                                     correctionMethod='fdr',path_probability='Bernoulli',
                                     NSAMPLES=1,NGENES=1,accExLength=TRUE,
-                                    BACKGROUNDpopulation=NULL,
+                                    BACKGROUNDpopulation=NULL,GeneLenghts,
                                     PATH_COLLECTION,SLAPE.FDRth=5,PATH='./'){
     
     
@@ -905,7 +903,7 @@ SLAPE.diff_SLAPE_analysis<-function(EM,contrastMatrix,positiveCondition,negative
     print('Analizing positive population...')
     positive_PFP<-
         SLAPE.analyse(EM = positiveEM,path_probability = path_probability,
-                      GeneLenghts = GECOBLenghts,
+                      GeneLenghts = GeneLenghts,
                       show_progress = TRUE,
                       NSAMPLES = 0,
                       NGENES = 0,
@@ -917,7 +915,7 @@ SLAPE.diff_SLAPE_analysis<-function(EM,contrastMatrix,positiveCondition,negative
     print('Analizing negative population...')
     negative_PFP<-
         SLAPE.analyse(EM = negativeEM,path_probability = path_probability,
-                      show_progress = TRUE,GeneLenghts = GECOBLenghts,
+                      show_progress = TRUE,GeneLenghts = GeneLenghts,
                       NSAMPLES = 0,
                       NGENES = 0,
                       BACKGROUNDpopulation = BACKGROUNDpopulation,
