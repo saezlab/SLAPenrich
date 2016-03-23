@@ -15,7 +15,7 @@ their overlaps (see details).
     (separated by '//'), for the \eqn{i}-th pathway gene-set (or gene-set resulting from merging multiple pathways, see details);}
     \item{\code{SOURCE}}{A string vector in which the \eqn{i}-th entry contains the Pathway-Commons description of the source of the                               \eqn{i}-th pathway, or sources of multiple merged pathways;}
     \item{\code{UNIPROTID}}{A list in which the \eqn{i}-th element is a string vector containing the uniprot identifiers of the genes                                 belonging to the \eqn{i}-th pathway;}
-    \item{\code{HGNC_SYMBOL}}{A list in which the \eqn{i}-th element is a string vector containing the official HUGO symbols of the genes                                 belonging to the \eqn{i}-th pathway or multiple-merged pathways}
+    \item{\code{HGNC_SYMBOL}}{A list in which the \eqn{i}-th element is a string vector containing the official HUGO symbols of the genes                                 belonging to the \eqn{i}-th pathway or multiple merged pathways}
     \item{\code{Ngenes}}{An integer vector in which the \eqn{i}-th element is the number of genes belonging to the \eqn{i}-th pathway;}
     \item{\code{backGround}}{A string vector containing the HUGO symbols of all the genes belonging to at least one pathway}
     \item{\code{miniSOURCE}}{A string vector in which the \eqn{i}-th entry contains the name of the source of the                                                      \eqn{i}-th pathway (panther, humancyc, pid or reactome);}
