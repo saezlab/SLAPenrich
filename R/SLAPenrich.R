@@ -904,25 +904,23 @@ SLAPE.diff_SLAPE_analysis<-function(EM,contrastMatrix,positiveCondition,negative
     positive_PFP<-
         SLAPE.analyse(EM = positiveEM,path_probability = path_probability,
                       GeneLenghts = GeneLenghts,
-                      show_progress = TRUE,
+                      show_progress = show_progress,
                       NSAMPLES = 0,
                       NGENES = 0,
                       BACKGROUNDpopulation = BACKGROUNDpopulation,
                       PATH_COLLECTION = PATH_COLLECTION,
-                      correctionMethod = correctionMethod,
-                      show_progress = show_progress)
+                      correctionMethod = correctionMethod)
     print('Done')
     
     print('Analizing negative population...')
     negative_PFP<-
         SLAPE.analyse(EM = negativeEM,path_probability = path_probability,
-                      show_progress = TRUE,GeneLenghts = GeneLenghts,
+                      show_progress = show_progress,GeneLenghts = GeneLenghts,
                       NSAMPLES = 0,
                       NGENES = 0,
                       BACKGROUNDpopulation = BACKGROUNDpopulation,
                       PATH_COLLECTION = PATH_COLLECTION,
-                      correctionMethod = correctionMethod,
-                      show_progress = show_progress)
+                      correctionMethod = correctionMethod)
     print('Done')
     
     

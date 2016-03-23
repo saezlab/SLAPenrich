@@ -127,13 +127,13 @@ data(SLAPE.all_genes_exonic_content_block_lengths_ensemble_20160209)
 
 #Loading clinical infos for 188 Lung Adenocarcinoma patients
 #(Ding et al, 2008)
-data(caseStudy_clinicalInfos)
+data(LUAD_CaseStudy_clinicalInfos)
 
 #Performing differential SLAPenrichment analysis comparing
 #Smokers Vs. Non Smokers. Pdf files with result figures are saved in
 #the current working directory
 RES<-
-    SLAPE.diff_SLAPE_analysis(EM = LUAD_CaseStudy_ugs,contrastMatrix = CLINIC_MAT,
+    SLAPE.diff_SLAPE_analysis(EM = LUAD_CaseStudy_ugs,contrastMatrix = LUAD_CaseStudy_clinicalInfos,
                               BACKGROUNDpopulation = rownames(LUAD_CaseStudy_ugs),
                               SLAPE.FDRth = 5,display = TRUE,
                               positiveCondition = 'SS_CurrentSmoker',
