@@ -2,7 +2,7 @@
 \alias{SLAPE.update_exon_attributes}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Updating gene exon attributes data object
+Creating an updated gene exon attributes data object
 }
 \description{
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~

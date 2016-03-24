@@ -1,12 +1,13 @@
-\name{LUAD_CaseStudy}
-\alias{LUAD_CaseStudy}
+\name{LUAD_CaseStudy_updatedGS}
+\alias{LUAD_CaseStudy_updatedGS}
 \docType{data}
 \title{
-    Genomic event matrix derived from variants found in a cohort of 188 lung adenocarcinoma patients
+    Genomic event matrix derived from variants found in a cohort of 188 lung adenocarcinoma patients, with updated gene names.
 }
 \description{
 A sparse integer matrix where column names are sample identifiers, and the row names official HUGO gene symbols. A non-zero entry in position \eqn{i,j} of this matrix indicates the number of somatic point mutations harbored by the \eqn{j-}sample in the \eqn{i-}gene.
 This matrix summarizes the somatic variants of a cohort of 188 lung adenocarcinoma patients of a public available dataset (see source).
+In this matrix the gene names are updated to recent HUGO nomenclatures.
 }
 \format{
   A named integer matrix with HUGO official gene symbols as row names and sample identifiers as column names:
@@ -26,6 +27,6 @@ The dataset from which this matrix was derived has been studied in Ding et al, 2
 Ding L, Getz G, Wheeler DA, Mardis ER, McLellan MD, Cibulskis K, et al. Somatic mutations affect key pathways in lung adenocarcinoma. Nature. 2008;455:1069-75.
 }
 \seealso{
-\code{\link{LUAD_CaseStudy_updatedGS}}
+\code{\link{LUAD_CaseStudy}}
 }
 \keyword{datasets}
