@@ -968,7 +968,7 @@ SLAPE.diff_SLAPE_analysis<-function(EM,contrastMatrix,positiveCondition,negative
     FDRs<-cbind(positiveFDR,negativeFDR)
     FDRs<-FDRs[rownames(COMPD),]/100
     
-    FDRs<- -log10(FDRs)
+    FDRs<- -log10(FDRs+.Machine$double.eps)
     
     currentNames<-PATHCOM_HUMAN$PATHWAY[as.numeric(rownames(FDRs))]
     suffixes<-rep('',length(currentNames))
