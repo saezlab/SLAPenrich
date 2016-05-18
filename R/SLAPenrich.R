@@ -418,14 +418,13 @@ SLAPE.analyse<-function(EM,
         
         currentGeneSet<-intersect(PATH_COLLECTION$HGNC_SYMBOL[[i]],rownames(EM))
         
-        GLENGHTS<-
-            GeneLenghts[currentGeneSet]
-        
-        if (length(which(!is.na(GLENGHTS)))==0 | length(currentGeneSet)<=NGENES){
-            toExclude[i]<-TRUE
-        }
-        
         if(accExLength){
+            GLENGHTS<-
+                GeneLenghts[currentGeneSet]
+            
+            if (length(which(!is.na(GLENGHTS)))==0 | length(currentGeneSet)<=NGENES){
+                toExclude[i]<-TRUE
+            }
             n <- sum(GeneLenghts[currentGeneSet],na.rm = TRUE)
         }else{
             n <-length(currentGeneSet)
