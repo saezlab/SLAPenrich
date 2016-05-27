@@ -420,14 +420,13 @@ SLAPE.analyse<-function(EM,
         
         currentGeneSet<-intersect(PATH_COLLECTION$HGNC_SYMBOL[[i]],rownames(EM))
         
-        GLENGHTS<-
-            GeneLenghts[currentGeneSet]
-        
-        if (length(which(!is.na(GLENGHTS)))==0 | length(currentGeneSet)<=NGENES){
-            toExclude[i]<-TRUE
-        }
-        
         if(accExLength){
+            GLENGHTS<-
+                GeneLenghts[currentGeneSet]
+            
+            if (length(which(!is.na(GLENGHTS)))==0 | length(currentGeneSet)<=NGENES){
+                toExclude[i]<-TRUE
+            }
             n <- sum(GeneLenghts[currentGeneSet],na.rm = TRUE)
         }else{
             n <-length(currentGeneSet)
@@ -970,7 +969,7 @@ SLAPE.diff_SLAPE_analysis<-function(EM,contrastMatrix,positiveCondition,negative
     FDRs<-cbind(positiveFDR,negativeFDR)
     FDRs<-FDRs[rownames(COMPD),]/100
     
-    FDRs<- -log10(FDRs)
+    FDRs<- -log10(FDRs+.Machine$double.eps)
     
     currentNames<-PATHCOM_HUMAN$PATHWAY[as.numeric(rownames(FDRs))]
     suffixes<-rep('',length(currentNames))
