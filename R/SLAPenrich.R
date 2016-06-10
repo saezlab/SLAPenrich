@@ -254,6 +254,8 @@ SLAPE.check_and_fix_gs_Dataset<-function(Dataset,updated.hgnc.table){
     
     return(Dataset)
 }
+
+
 SLAPE.update_HGNC_Table<-function(){
     print('Downloading updated table from genaname.org')
     day<-Sys.time()
