@@ -170,7 +170,58 @@ SLE.plotMyHeat <- function(x,orPlot,verdata,filename) {
     dev.off()
 }
 
+
 #exported functions
+SLAPE.check_and_fix_path_collection<-function(pathColl,updated.hgnc.table){
+    
+    
+    npath<-length(pathColl$PATHWAY)
+    
+    for (i in 1:npath){
+        print(i)
+        tmp<-pathColl$HGNC_SYMBOL[[i]]
+        
+        if (length(tmp)>0){
+            
+        
+        checked_gs<-checkGeneSymbols(tmp,hgnc.table = updated.hgnc.table)
+        non_approved_id<-which(checked_gs[,2]==FALSE)
+        
+        if (length(non_approved_id)>0){
+            
+            print('The dataset contains non-approved gene symbols...')
+            print('Outdated gene symbols have been updated:')
+            
+            outdated_id<-non_approved_id[which(!is.na(checked_gs[non_approved_id,3]))]
+            print(paste(checked_gs[outdated_id,1],'->',checked_gs[outdated_id,3]))
+            
+            non_approved_id<-which(is.na(checked_gs[,3]))
+            if(length(non_approved_id)>0){
+                print('The following non approved gene symbols have been removed:')
+                print(checked_gs[non_approved_id,1])
+                
+            }
+            
+            tmp[outdated_id]<-checked_gs[outdated_id,3]
+            tmp<-setdiff(tmp,tmp[non_approved_id])
+            
+            pathColl$HGNC_SYMBOL[[i]]<-tmp
+        }
+            pathColl$Ngenes[[i]]<-length(pathColl$HGNC_SYMBOL[[i]])
+        }
+    }
+    
+    ui<-unlist(pathColl$Ngenes)
+    idx<-which(ui>2)
+    
+    pathColl$PATHWAY<-pathColl$PATHWAY[idx]
+    pathColl$HGNC_SYMBOL<-pathColl$HGNC_SYMBOL[idx]
+    pathColl$Hallmark<-pathColl$Hallmark[idx]
+    pathColl$Ngenes<-pathColl$Ngenes[idx]
+    pathColl$backGround<-sort(unique(unlist(pathColl$HGNC_SYMBOL)))
+    
+    return(pathColl)
+}
 #documented
 SLAPE.readDataset<-function(filename){
     fc<-as.matrix(read.csv(filename,row.names=1))
@@ -299,7 +350,7 @@ SLAPE.compute_gene_exon_content_block_lengths<-function(ExonAttributes){
     
     for (i in 1:ngenes){
         setTxtProgressBar(pb,i)
-        GECOBLenghts[i]<-SLAPE.Gene_ECBLength(ExonAttributes,uniqueGS[i])
+        GECOBLenghts[i]<-SLAPE.gene_ecbl_length(ExonAttributes,uniqueGS[i])
     }
     close(pb)
     print("DONE!")
