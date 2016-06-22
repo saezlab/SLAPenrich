@@ -170,10 +170,35 @@ SLE.plotMyHeat <- function(x,orPlot,verdata,filename) {
     dev.off()
 }
 
-SLE.radialHallmarkPlot<-function(DATA_VEC,mc=50){
+SLE.plot.chrom = function(data, chromlength, radius=1,COLORS,LABEL,SCALE=0.5,
+                      width=chromlength/length(data),TOADD,scale_lines=TRUE) {
+    linesCircle(radius)
+    starts = seq(0, chromlength-1, width)+1
     
-    hm_colors<-c('green','brown','magenta','cornflowerblue',
-                 'orange','black','red','darkblue','gray','purple')
+    scale = SCALE / max(abs(data))
+    
+ 
+    for (i in 1:length(COLORS)) {
+        polygonChrom(starts[i], starts[i]+width-1, chromlength, radius,
+                     data[i] * scale + radius, col=COLORS[i])
+    }
+    
+    if(scale_lines){
+        linesCircle(radius+max(data) * scale,col='black',lwd=2)
+        linesCircle(radius+max(data)/2 * scale,col='darkgray',lty=2)
+        
+        text(0,radius+max(data) * scale+0.05,labels = max(data),pos = 4)
+        text(0,radius+max(data)/2 * scale+0.05,labels = max(data)/2,pos = 4,cex = 0.8,col='black')
+        text(0,-radius-max(data) * scale,labels = LABEL,pos = 3,cex = 0.8)    
+    }
+    
+    
+}
+
+SLE.radialHallmarkPlot<-function(DATA_VEC,mc=50,RADIUS=1,SCALE=0.5,LABEL='',TOADD=FALSE){
+    
+    hm_colors<-c('#139144','#663913','#C61684','#0D67A3',
+                 '#D56611','#1A1718','#EA2321','#172D83','#ADB5BA','#6B2687')
     
     names(hm_colors)<-c("Sustaining Proliferative Signaling",
                         "Evading Growth Suppressors",
@@ -187,15 +212,67 @@ SLE.radialHallmarkPlot<-function(DATA_VEC,mc=50){
                         "Deregulating Cellular Energetics")
     hm<-names(hm_colors)
     
-    plot.new()
-    plot.window(c(-2.5, 2.5), c(-2.5, 2.5))
-    plot.chrom(DATA_VEC$DATA, 10000, radius=1,
-               COLORS = hm_colors[DATA_VEC$HM])
+    img <- readPNG("data/HM_circle.png")
+    
+    if (!TOADD){
+        plot.new()
+        plot.window(c(-RADIUS-2, RADIUS+2), c(-RADIUS-2, RADIUS+2))
+        rasterImage(img, -RADIUS, -RADIUS, RADIUS, RADIUS, interpolate=FALSE)
+    }
+    
+    
+    toPlot<-
+        DATA_VEC$DATA[c("Evading Growth Suppressors",
+                        "Avoiding Immune Destruction",
+                        "Enabling Replicative Immortality",
+                        "Tumour-Promoting Inflammation",
+                        "Activating Invasion and Metastasis",
+                        "Inducing Angiogenesis",
+                        "Genome Instability and Mutation",
+                        "Resisting Cell Death",
+                        "Deregulating Cellular Energetics",
+                        "Sustaining Proliferative Signaling")]
+                        
+    SLE.plot.chrom(data = toPlot, chromlength = 10000, radius=RADIUS,SCALE=SCALE,
+               COLORS = hm_colors[names(toPlot)],LABEL = LABEL,TOADD=TOADD)
 #     
 #     PATTERN[is.na(PATTERN)]<-0
 #     plot.chrom(PATTERN,10000,radius=2,COLORS = hm_colors[HM])
 #     text(0,0,TYPE,cex=2)
 }
+
+SLE.HallmarkAnalysis<-function(TYPE,PATH_COLLECTION){
+
+    load(paste('../../../R_MAIN_PAPER_4.0/Fi_gdsc1000_DATA/SEQUENCING/TUMOURS/R/BEMs/',TYPE,'.rdata',sep=''))
+    Dataset<-BEM$logic
+
+    Dataset<-SLAPE.check_and_fix_gs_Dataset(Dataset,updated.hgnc.table = updated.hgnc.table)
+
+    PFPw<-SLAPE.analyse(EM = Dataset,PATH_COLLECTION = PATH_COLLECTION,
+                    show_progress = TRUE,
+                    NSAMPLES = round(ncol(Dataset)*5/100),
+                    NGENES = 2,
+                    accExLength = TRUE,GeneLenghts = GECOBLenghts,
+                    BACKGROUNDpopulation = rownames(Dataset),
+                    path_probability = 'Bernoulli')
+
+    SLAPE.write.table(PFP = PFPw,EM = Dataset,
+                      filename = paste("../../RESULTS/SLAPenrich/PT_HM_20160623/",TYPE,'.csv',sep=''),
+                      fdrth=Inf,exclcovth = 0,PATH_COLLECTION = PATH_COLLECTION,GeneLenghts = GECOBLenghts)
+    
+    save(PFPw,file=paste('../../RESULTS/SLAPenrich/PT_HM_20160623/',TYPE,'.rdata',sep=''))
+}
+
+SLE.PFPtoHM<-function(PFPw,HM_TABLE,PATH_COLLECTION){
+    
+    o<-order(PFPw$pathway_id)
+
+    pvals<-PFPw$pathway_pvals[o]
+
+    PATH_COLLECTION$PATHWAY[o]
+    
+}
+
 
 #exported functions
 SLAPE.check_and_fix_path_collection<-function(pathColl,updated.hgnc.table){
@@ -339,7 +416,7 @@ SLAPE.integrateHallmarks<-function(PATH_COLLECTION){
     
     
     ## 5) Tumor-promoting inflammation
-    pathway2hallmark[["Tumor-Promoting Inflammation"]]<-sort(
+    pathway2hallmark[["Tumour-Promoting Inflammation"]]<-sort(
         c(grep('inflammation',PATH_COLLECTION$PATHWAY,value = T,ignore.case = TRUE),
           grep('TGF',PATH_COLLECTION$PATHWAY,value = T),
           grep('SMAD',PATH_COLLECTION$PATHWAY,value = T),
@@ -433,30 +510,29 @@ SLAPE.integrateHallmarks<-function(PATH_COLLECTION){
     pathway2hallmark<-cbind(idxs,pathway2hallmark)
     names(pathway2hallmark) = c('Idx','Hallmark', 'Pathway_name')
     
+    psets<-unique(pathway2hallmark[,2])
+    
+    idx<-match(psets,PATH_COLLECTION$PATHWAY)
+    
     PATH_COLLECTION$UNIPROTID<-
-        PATH_COLLECTION$UNIPROTID[pathway2hallmark$Idx]
+        PATH_COLLECTION$UNIPROTID[idx]
     
     PATH_COLLECTION$HGNC_SYMBOL<-
-        PATH_COLLECTION$HGNC_SYMBOL[pathway2hallmark$Idx]
+        PATH_COLLECTION$HGNC_SYMBOL[idx]
     
     PATH_COLLECTION$SOURCE<-
-        PATH_COLLECTION$SOURCE[pathway2hallmark$Idx]
+        PATH_COLLECTION$SOURCE[idx]
     
     PATH_COLLECTION$PATHWAY<-
-        PATH_COLLECTION$PATHWAY[pathway2hallmark$Idx]
+        PATH_COLLECTION$PATHWAY[idx]
     
-    PATH_COLLECTION$PATHWAY<-
-        PATH_COLLECTION$PATHWAY[pathway2hallmark$Idx]
     
     PATH_COLLECTION$Ngenes<-
-        PATH_COLLECTION$Ngenes[pathway2hallmark$Idx]
+        PATH_COLLECTION$Ngenes[idx]
     
     PATH_COLLECTION$backGround<-
-        sort(unique(unlist(PATH_COLLECTION$HGNC_SYMBOL)))
-    
-    PATH_COLLECTION$HallMark<-
-        pathway2hallmark$Hallmark
-    
+        sort(unique(unlist(PATH_COLLECTION$HGNC_SYMBOL[idx])))
+
     return(list(PATH_COLLECTION=PATH_COLLECTION,HallMark_Table=pathway2hallmark))
  
 }
