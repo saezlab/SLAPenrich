@@ -620,7 +620,7 @@ SLAPE.write.table<-function(PFP,EM,filename='',fdrth=Inf,exclcovth=0,PATH_COLLEC
     TOTexlength<-rep(NA,length(NAMES))
     
     for (i in 1:length(NAMES)){
-        TOTexlength[i]<-sum(GeneLenghts[PATH_COLLECTION$HGNC_SYMBOL[[PFP$pathway_id[i]]]])    
+        TOTexlength[i]<-sum(GeneLenghts[PATH_COLLECTION$HGNC_SYMBOL[[PFP$pathway_id[i]]]],na.rm=TRUE)    
     }
     
     np<-length(PFP$pathway_id)
