@@ -170,6 +170,32 @@ SLE.plotMyHeat <- function(x,orPlot,verdata,filename) {
     dev.off()
 }
 
+SLE.radialHallmarkPlot<-function(DATA_VEC,mc=50){
+    
+    hm_colors<-c('green','brown','magenta','cornflowerblue',
+                 'orange','black','red','darkblue','gray','purple')
+    
+    names(hm_colors)<-c("Sustaining Proliferative Signaling",
+                        "Evading Growth Suppressors",
+                        "Avoiding Immune Destruction",
+                        "Enabling Replicative Immortality",
+                        "Tumour-Promoting Inflammation",
+                        "Activating Invasion and Metastasis",
+                        "Inducing Angiogenesis",
+                        "Genome Instability and Mutation",
+                        "Resisting Cell Death",
+                        "Deregulating Cellular Energetics")
+    hm<-names(hm_colors)
+    
+    plot.new()
+    plot.window(c(-2.5, 2.5), c(-2.5, 2.5))
+    plot.chrom(DATA_VEC$DATA, 10000, radius=1,
+               COLORS = hm_colors[DATA_VEC$HM])
+#     
+#     PATTERN[is.na(PATTERN)]<-0
+#     plot.chrom(PATTERN,10000,radius=2,COLORS = hm_colors[HM])
+#     text(0,0,TYPE,cex=2)
+}
 
 #exported functions
 SLAPE.check_and_fix_path_collection<-function(pathColl,updated.hgnc.table){
@@ -222,6 +248,224 @@ SLAPE.check_and_fix_path_collection<-function(pathColl,updated.hgnc.table){
     
     return(pathColl)
 }
+SLAPE.integrateHallmarks<-function(PATH_COLLECTION){
+    ## Classification of pahways according the halmark the represent
+    ## Based on Hanahan et al. Cell. 2011
+    
+    pathway2hallmark <- list()
+    
+    ## 1) Sustaining Proliferative Signaling
+    pathway2hallmark[["Sustaining Proliferative Signaling"]] <- sort(c(
+        ## Proliferation pathways
+        grep("Cell Cycle", PATH_COLLECTION$PATHWAY, value = T),
+        grep("Cell Division", PATH_COLLECTION$PATHWAY, value = T),
+        grep("Growth Hormone", PATH_COLLECTION$PATHWAY, value = T),
+        
+        ## Growh factors
+        # EGF
+        grep(" EGF", PATH_COLLECTION$PATHWAY, value = T),
+        grep("^ERBB", PATH_COLLECTION$PATHWAY, value = T, ignore.case = T),
+        
+        # FGF
+        grep("^FGF", PATH_COLLECTION$PATHWAY, value = T),
+        grep("Signaling By FGFR", PATH_COLLECTION$PATHWAY, value = T),
+        intersect(grep("FGF", PATH_COLLECTION$PATHWAY, value = T), grep("Activa", PATH_COLLECTION$PATHWAY, value = T)),
+        
+        ## Downstream signalling pathways
+        # PI3K
+        grep("PI3", PATH_COLLECTION$PATHWAY, value = T),
+        # AKT
+        intersect(grep("AKT", PATH_COLLECTION$PATHWAY, value = T), grep("Activa", PATH_COLLECTION$PATHWAY, value = T)),
+        grep("Signaling By AKT", PATH_COLLECTION$PATHWAY, value = T),
+        # MAP-kinase
+        grep("MAP", PATH_COLLECTION$PATHWAY, value = T),
+        # BRAF
+        PATH_COLLECTION$PATHWAY[ grep("BRAF", PATH_COLLECTION$HGNC_SYMBOL)],
+        # Ras
+        grep("RAS ", PATH_COLLECTION$PATHWAY, value = T),
+        # mTOR
+        grep("MTOR", PATH_COLLECTION$PATHWAY, value = T),
+        # MYC
+        grep("MYC", PATH_COLLECTION$PATHWAY, value = T),
+        # CDK2
+        grep("Cdk2", PATH_COLLECTION$PATHWAY, value = T),
+        # JAK
+        grep("JAK/STAT", PATH_COLLECTION$PATHWAY, value = T),
+        # STAT3
+        intersect(grep("STAT3", PATH_COLLECTION$PATHWAY, value = T), grep("Activa", PATH_COLLECTION$PATHWAY, value = T))))
+    
+    
+    ## 2) Evading Growth Suppressors
+    pathway2hallmark[["Evading Growth Suppressors"]] <- sort(c(
+        
+        ## Tumor suppressors
+        # RB
+        grep("RB1", PATH_COLLECTION$PATHWAY, value = T),
+        # TP53
+        grep("P53", PATH_COLLECTION$PATHWAY, value = T),
+        # APC
+        grep("APC", PATH_COLLECTION$PATHWAY, value = T),
+        # PTEN
+        intersect(PATH_COLLECTION$PATHWAY[ grep("PTEN", PATH_COLLECTION$HGNC_SYMBOL) ], grep('Regulat', PATH_COLLECTION$PATHWAY, value = T)),
+        # SMAD4
+        grep("smad4", PATH_COLLECTION$PATHWAY, value = T, ignore.case = T),
+        
+        ## Senescence And Autophagy In Cancer
+        grep("Senescence And Autophagy In Cancer", PATH_COLLECTION$PATHWAY, value = T),
+        
+        # Cyclins
+        grep("^Cyclin", PATH_COLLECTION$PATHWAY, value = T),
+        grep("Degradation Of Cyclin", PATH_COLLECTION$PATHWAY, value = T),
+        grep("Inactivation Of Cyclin", PATH_COLLECTION$PATHWAY, value = T),
+        grep("Checkpoint", PATH_COLLECTION$PATHWAY, value = T),
+        # TGF
+        grep("^TGF Beta", PATH_COLLECTION$PATHWAY, value = T)))
+    
+    
+    ## 3) Avoiding immune desctruction
+    pathway2hallmark[["Avoiding Immune Destruction"]]<-sort(c(grep("immune", PATH_COLLECTION$PATHWAY, value = T,ignore.case = TRUE),
+                                                               grep("IFN", PATH_COLLECTION$PATHWAY, value = T,ignore.case = TRUE),
+                                                               names(grep('NLRC5',PATH_COLLECTION$HGNC_SYMBOL,value = TRUE)),
+                                                               grep("APC", PATH_COLLECTION$PATHWAY, value = T,ignore.case = TRUE),
+                                                               grep("MHC", PATH_COLLECTION$PATHWAY, value = T,ignore.case = TRUE)))
+    
+    ## 4) Enabling Replicative Immortality
+    pathway2hallmark[["Enabling Replicative Immortality"]] <- sort(c(
+        # Telomerase TEP1 and TERT
+        grep("Telomer", PATH_COLLECTION$PATHWAY, value = T),
+        # DNA damage signalling
+        grep("Senescence", PATH_COLLECTION$PATHWAY, value = T),
+        grep("Recognition Of DNA Damage", PATH_COLLECTION$PATHWAY, value = T) ))
+    
+    
+    ## 5) Tumor-promoting inflammation
+    pathway2hallmark[["Tumor-Promoting Inflammation"]]<-sort(
+        c(grep('inflammation',PATH_COLLECTION$PATHWAY,value = T,ignore.case = TRUE),
+          grep('TGF',PATH_COLLECTION$PATHWAY,value = T),
+          grep('SMAD',PATH_COLLECTION$PATHWAY,value = T),
+          grep('chemokine',PATH_COLLECTION$PATHWAY,value = T,ignore.case = TRUE),
+          grep('cytokine',PATH_COLLECTION$PATHWAY,value = T,ignore.case = TRUE),
+          grep('interferon',PATH_COLLECTION$PATHWAY,value = T,ignore.case = TRUE),
+          grep('IFN',PATH_COLLECTION$PATHWAY,value = T)))
+    
+    
+    
+    ## 6) Activating Invasion and Metastasis
+    pathway2hallmark[["Activating Invasion and Metastasis"]] <- sort(c(
+        # Epithelial to mesenchymal transition
+        grep("EMT", PATH_COLLECTION$PATHWAY, value = T),
+        # Snai1, Slug, Twist, and Zeb1/2, orchestrate the EMT
+        PATH_COLLECTION$PATHWAY[ grep("SNAI1", PATH_COLLECTION$HGNC_SYMBOL) ],
+        PATH_COLLECTION$PATHWAY[ grep("SNAI1", PATH_COLLECTION$HGNC_SYMBOL) ],
+        PATH_COLLECTION$PATHWAY[ grep("ZEB", PATH_COLLECTION$HGNC_SYMBOL) ],
+        # MTSS1 / BRMS1 / TIAM1
+        PATH_COLLECTION$PATHWAY[ grep("MTSS1", PATH_COLLECTION$HGNC_SYMBOL) ],
+        PATH_COLLECTION$PATHWAY[ grep("BRMS1", PATH_COLLECTION$HGNC_SYMBOL) ],
+        PATH_COLLECTION$PATHWAY[ grep("TIAM1", PATH_COLLECTION$HGNC_SYMBOL) ],
+        # E-cadherin CDH1
+        grep("E Cadherin", PATH_COLLECTION$PATHWAY, value = T),
+        # Metalloproteases (MMPs)
+        grep("Metalloprot", PATH_COLLECTION$PATHWAY, value = T),
+        intersect(PATH_COLLECTION$PATHWAY[ grep("MMP9", PATH_COLLECTION$HGNC_SYMBOL) ], grep("Degradation", PATH_COLLECTION$PATHWAY, value = T))))
+    
+    ## 7) Inducing Angiogenesis
+    pathway2hallmark[["Inducing Angiogenesis"]] <- sort(c(
+        # Wnt
+        grep("Wnt Signaling Pathway$", PATH_COLLECTION$PATHWAY, value = T),
+        # Hypoxia
+        grep("Hypoxia", PATH_COLLECTION$PATHWAY, value = T),
+        # Angiogenesis
+        grep("Angiogen", PATH_COLLECTION$PATHWAY, value = T),
+        # Tie
+        grep("Tie", PATH_COLLECTION$PATHWAY, value = T),
+        # PDGF
+        grep("PDGF", PATH_COLLECTION$PATHWAY, value = T),
+        # NOTCH1
+        grep("NOTCH", PATH_COLLECTION$PATHWAY, value = T),
+        # HIF1A
+        grep("HIF", PATH_COLLECTION$PATHWAY, value = T),
+        # VEGF
+        grep("VEGF", PATH_COLLECTION$PATHWAY, value = T)))
+    
+    
+    ## 8) Genome instability and mutation
+    pathway2hallmark[["Genome Instability and Mutation"]]<-sort(
+        c(grep("DNA repair", PATH_COLLECTION$PATHWAY, value = T,ignore.case = TRUE),
+          grep("DNA damage", PATH_COLLECTION$PATHWAY, value = T,ignore.case = TRUE),
+          grep("DNA damage", PATH_COLLECTION$PATHWAY, value = T,ignore.case = TRUE),
+          names(grep("BRCA", PATH_COLLECTION$HGNC_SYMBOL, value = T,ignore.case = TRUE))))
+    
+    ## 9) Resisting Cell Death
+    pathway2hallmark[["Resisting Cell Death"]] <- sort(c(
+        grep("^Apop", PATH_COLLECTION$PATHWAY, value = T),
+        grep("Death", PATH_COLLECTION$PATHWAY, value = T),
+        intersect(grep("BCL", PATH_COLLECTION$PATHWAY, value = T), grep("Apop", PATH_COLLECTION$PATHWAY, value = T)),
+        grep("FAS ", PATH_COLLECTION$PATHWAY, value = T),
+        grep("TNFA", PATH_COLLECTION$PATHWAY, value = T, ignore.case = T),
+        grep("TRAIL", PATH_COLLECTION$PATHWAY, value = T, ignore.case = T),
+        grep('DNA', PATH_COLLECTION$PATHWAY[ grep("BRCA", PATH_COLLECTION$HGNC_SYMBOL)] , value = T),
+        grep("CD95", PATH_COLLECTION$PATHWAY, value = T)))
+    
+    
+    ## 10) Deregulating cellular energetics
+    #Hypoxia Signaling
+    pathway2hallmark[["Deregulating Cellular Energetics"]] <- sort(c(
+        grep("HIF", PATH_COLLECTION$PATHWAY, value = T),
+        #Glycolysis
+        grep("Glycolysis", PATH_COLLECTION$PATHWAY, value = T),
+        # Insulin
+        grep("Insulin", PATH_COLLECTION$PATHWAY, value = T),
+        # Warburg Effect
+        grep("Warburg Effect", PATH_COLLECTION$PATHWAY, value = T),
+        # AMPK
+        intersect(grep("AMPK", PATH_COLLECTION$PATHWAY, value = T), grep("Energy", PATH_COLLECTION$PATHWAY, value = T)),
+        # Energy Metabolism
+        grep("Mitochondrial Beta Oxidation", PATH_COLLECTION$PATHWAY, value = T))
+    )
+    
+    
+    ####################################################
+    
+    
+    
+    pathway2hallmark <- unique(melt(pathway2hallmark))[, c(2,1) ]
+    idxs<-match(pathway2hallmark[,2],PATH_COLLECTION$PATHWAY)
+    pathway2hallmark<-cbind(idxs,pathway2hallmark)
+    names(pathway2hallmark) = c('Idx','Hallmark', 'Pathway_name')
+    
+    PATH_COLLECTION$UNIPROTID<-
+        PATH_COLLECTION$UNIPROTID[pathway2hallmark$Idx]
+    
+    PATH_COLLECTION$HGNC_SYMBOL<-
+        PATH_COLLECTION$HGNC_SYMBOL[pathway2hallmark$Idx]
+    
+    PATH_COLLECTION$SOURCE<-
+        PATH_COLLECTION$SOURCE[pathway2hallmark$Idx]
+    
+    PATH_COLLECTION$PATHWAY<-
+        PATH_COLLECTION$PATHWAY[pathway2hallmark$Idx]
+    
+    PATH_COLLECTION$PATHWAY<-
+        PATH_COLLECTION$PATHWAY[pathway2hallmark$Idx]
+    
+    PATH_COLLECTION$Ngenes<-
+        PATH_COLLECTION$Ngenes[pathway2hallmark$Idx]
+    
+    PATH_COLLECTION$backGround<-
+        sort(unique(unlist(PATH_COLLECTION$HGNC_SYMBOL)))
+    
+    PATH_COLLECTION$HallMark<-
+        pathway2hallmark$Hallmark
+    
+    return(list(PATH_COLLECTION=PATH_COLLECTION,HallMark_Table=pathway2hallmark))
+ 
+}
+
+SLAPE.HallmarkSummary<-function(PATHHallMarkTable,PATH_COLLECTION){
+    
+}
+
+
 #documented
 SLAPE.readDataset<-function(filename){
     fc<-as.matrix(read.csv(filename,row.names=1))
@@ -254,8 +498,6 @@ SLAPE.check_and_fix_gs_Dataset<-function(Dataset,updated.hgnc.table){
     
     return(Dataset)
 }
-
-
 SLAPE.update_HGNC_Table<-function(){
     print('Downloading updated table from genaname.org')
     day<-Sys.time()
