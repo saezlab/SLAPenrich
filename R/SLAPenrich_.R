@@ -241,7 +241,6 @@ SLE.radialHallmarkPlot<-function(DATA_VEC,mc=50,RADIUS=1,SCALE=0.5,LABEL='',TOAD
 #     text(0,0,TYPE,cex=2)
 }
 
-<<<<<<< HEAD
 SLE.HallmarkAnalysis<-function(TYPE,PATH_COLLECTION){
 
     load(paste('../../../R_MAIN_PAPER_4.0/Fi_gdsc1000_DATA/SEQUENCING/TUMOURS/R/BEMs/',TYPE,'.rdata',sep=''))
@@ -275,9 +274,6 @@ SLE.PFPtoHM<-function(PFPw,HM_TABLE,PATH_COLLECTION){
 }
 
 
-=======
-###cazz
->>>>>>> a5ac624652c0f096278b66f2fe77525c572c9cdf
 #exported functions
 SLAPE.check_and_fix_path_collection<-function(pathColl,updated.hgnc.table){
     
