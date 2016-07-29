@@ -171,7 +171,7 @@ SLE.plotMyHeat <- function(x,orPlot,verdata,filename) {
 }
 
 SLE.plot.chrom = function(data, maxscale=-Inf,chromlength, radius=1,COLORS,LABEL,SCALE=0.5,
-                      width=chromlength/length(data),TOADD,scale_lines=TRUE) {
+                          width=chromlength/length(data),TOADD,scale_lines=TRUE) {
     linesCircle(radius)
     starts = seq(0, chromlength-1, width)+1
     
@@ -182,7 +182,7 @@ SLE.plot.chrom = function(data, maxscale=-Inf,chromlength, radius=1,COLORS,LABEL
     }
     
     
- 
+    
     for (i in 1:length(COLORS)) {
         polygonChrom(starts[i], starts[i]+width-1, chromlength, radius,
                      data[i] * scale + radius, col=COLORS[i])
@@ -248,39 +248,74 @@ SLE.radialHallmarkPlot<-function(DATA_VEC,maxscale= -Inf,mc=50,RADIUS=1,SCALE=0.
     }  
     
     SLE.plot.chrom(data = toPlot, chromlength = 10000, radius=RADIUS,SCALE=SCALE,maxscale = maxscale,
-               COLORS = hm_colors[names(toPlot)],LABEL = LABEL,TOADD=TOADD,scale_lines = scaleNumb)
-#     
-#     PATTERN[is.na(PATTERN)]<-0
-#     plot.chrom(PATTERN,10000,radius=2,COLORS = hm_colors[HM])
+                   COLORS = hm_colors[names(toPlot)],LABEL = LABEL,TOADD=TOADD,scale_lines = scaleNumb)
+    #     
+    #     PATTERN[is.na(PATTERN)]<-0
+    #     plot.chrom(PATTERN,10000,radius=2,COLORS = hm_colors[HM])
     text(0,0,title,cex=2)
 }
 
-SLE.HallmarkAnalysis<-function(TYPE,PATH_COLLECTION,HM_TABLE){
-
+SLE.HallmarkAnalysis<-function(TYPE,PATH_COLLECTION,HM_TABLE,PATH,removeDrivers=FALSE){
+    
     load(paste('../../../R_MAIN_PAPER_4.0/Fi_gdsc1000_DATA/SEQUENCING/TUMOURS/R/BEMs/',TYPE,'.rdata',sep=''))
+    
     Dataset<-BEM$logic
-
+    
+    
+    if(removeDrivers){
+        load('data/IntoGen_cancer_drivers_13_06_2014.rdata')
+        CD<-cancerDrivers$ActingDriver_Symbol[which(cancerDrivers$Tumor_Type==TYPE)]
+        Dataset<-Dataset[setdiff(rownames(Dataset),CD),]
+        Dataset<-Dataset[which(rowSums(Dataset)>0),]
+        Dataset<-Dataset[,which(colSums(Dataset)>0)]
+    }
+    
+    
     Dataset<-SLAPE.check_and_fix_gs_Dataset(Dataset,updated.hgnc.table = updated.hgnc.table)
-
+    
     PFPw<-SLAPE.analyse(EM = Dataset,PATH_COLLECTION = PATH_COLLECTION,
-                    show_progress = TRUE,
-                    NSAMPLES = round(ncol(Dataset)*5/100),
-                    NGENES = 2,
-                    accExLength = TRUE,GeneLenghts = GECOBLenghts,
-                    BACKGROUNDpopulation = rownames(Dataset),
-                    path_probability = 'Bernoulli')
-
+                        show_progress = TRUE,
+                        NSAMPLES = round(ncol(Dataset)*5/100),
+                        NGENES = 2,
+                        accExLength = TRUE,GeneLenghts = GECOBLenghts,
+                        BACKGROUNDpopulation = rownames(Dataset),
+                        path_probability = 'Bernoulli')
+    
     SLAPE.write.table(PFP = PFPw,EM = Dataset,
-                      filename = paste("../../RESULTS/SLAPenrich/PT_HM_20160623/",TYPE,'.csv',sep=''),
+                      filename = paste(PATH,TYPE,'.csv',sep=''),
                       fdrth=Inf,exclcovth = 0,PATH_COLLECTION = PATH_COLLECTION,GeneLenghts = GECOBLenghts)
     
-    save(PFPw,file=paste('../../RESULTS/SLAPenrich/PT_HM_20160623/',TYPE,'.rdata',sep=''))
+    save(PFPw,file=paste(PATH,TYPE,'.rdata',sep=''))
     
-    RES<-SLE.PFPtoHM(PFPw,HM_TABLE,PATH_COLLECTION)
+    RES_N<-SLE.PFPtoHM(PFPw,HM_TABLE,PATH_COLLECTION)
     
-    save(RES,file=paste('../../RESULTS/SLAPenrich/PT_HM_20160623/',TYPE,'_HM.rdata',sep=''))
+    save(RES,file=paste(PATH,TYPE,'_HM.rdata',sep=''))
     return(RES)
     
+}
+
+SLE.HallmarkAnalysis_bootstrap<-function(TYPE,PATH_COLLECTION,HM_TABLE,PATH,Dataset,NSAMPLES,NTRIALS){
+    
+    NenrichedPaths<-vector()
+    for (i in 1:NTRIALS){
+        
+        print(paste('Trial',i,'of',NTRIALS))
+        cDataset<-Dataset[,sample(1:ncol(Dataset),NSAMPLES)]
+        cDataset<-cDataset[which(rowSums(cDataset)>0),]
+        
+        PFPw<-SLAPE.analyse(EM = cDataset,PATH_COLLECTION = PATH_COLLECTION,
+                            show_progress = TRUE,
+                            NSAMPLES = round(ncol(Dataset)*5/100),
+                            NGENES = 2,
+                            accExLength = TRUE,GeneLenghts = GECOBLenghts,
+                            BACKGROUNDpopulation = rownames(Dataset),
+                            path_probability = 'Bernoulli')
+        RES_N<-SLE.PFPtoHM(PFPw,HM_TABLE,PATH_COLLECTION)
+        
+        NenrichedPaths[i]<-length(which(RES_N$pvals<0.05 & RES_N$FDR<5 & RES_N$ME>50))
+        print(NenrichedPaths)
+    }
+    return(NenrichedPaths)
 }
 
 SLE.PFPtoHM<-function(PFPw,HM_TABLE,PATH_COLLECTION){
@@ -326,30 +361,30 @@ SLAPE.check_and_fix_path_collection<-function(pathColl,updated.hgnc.table){
         
         if (length(tmp)>0){
             
-        
-        checked_gs<-checkGeneSymbols(tmp,hgnc.table = updated.hgnc.table)
-        non_approved_id<-which(checked_gs[,2]==FALSE)
-        
-        if (length(non_approved_id)>0){
             
-            print('The dataset contains non-approved gene symbols...')
-            print('Outdated gene symbols have been updated:')
+            checked_gs<-checkGeneSymbols(tmp,hgnc.table = updated.hgnc.table)
+            non_approved_id<-which(checked_gs[,2]==FALSE)
             
-            outdated_id<-non_approved_id[which(!is.na(checked_gs[non_approved_id,3]))]
-            print(paste(checked_gs[outdated_id,1],'->',checked_gs[outdated_id,3]))
-            
-            non_approved_id<-which(is.na(checked_gs[,3]))
-            if(length(non_approved_id)>0){
-                print('The following non approved gene symbols have been removed:')
-                print(checked_gs[non_approved_id,1])
+            if (length(non_approved_id)>0){
                 
+                print('The dataset contains non-approved gene symbols...')
+                print('Outdated gene symbols have been updated:')
+                
+                outdated_id<-non_approved_id[which(!is.na(checked_gs[non_approved_id,3]))]
+                print(paste(checked_gs[outdated_id,1],'->',checked_gs[outdated_id,3]))
+                
+                non_approved_id<-which(is.na(checked_gs[,3]))
+                if(length(non_approved_id)>0){
+                    print('The following non approved gene symbols have been removed:')
+                    print(checked_gs[non_approved_id,1])
+                    
+                }
+                
+                tmp[outdated_id]<-checked_gs[outdated_id,3]
+                tmp<-setdiff(tmp,tmp[non_approved_id])
+                
+                pathColl$HGNC_SYMBOL[[i]]<-tmp
             }
-            
-            tmp[outdated_id]<-checked_gs[outdated_id,3]
-            tmp<-setdiff(tmp,tmp[non_approved_id])
-            
-            pathColl$HGNC_SYMBOL[[i]]<-tmp
-        }
             pathColl$Ngenes[[i]]<-length(pathColl$HGNC_SYMBOL[[i]])
         }
     }
@@ -571,16 +606,93 @@ SLAPE.integrateHallmarks<-function(PATHCOLL){
         PATHCOLL$Ngenes[idx]
     
     PATHCOLL$backGround<-
-        sort(unique(unlist(PATHCOLL$HGNC_SYMBOL[idx])))
+        sort(unique(unlist(PATHCOLL$HGNC_SYMBOL)))
     
     return(list(PATHCOLL=PATHCOLL,HallMark_Table=pathway2hallmark))
     
 }
 
-SLAPE.HallmarkSummary<-function(PATHHallMarkTable,PATH_COLLECTION){
+SLAPE.HM_core_components<-function(HM_PFP,HM,EM,PATH='./',fdrth=Inf,exclcovth=0,PATH_COLLECTION){
     
+    filename<-PATH
+    EM<-sign(EM)
+    
+    id<-which(HM_PFP$Hallmark==HM & HM_PFP$ME>exclcovth & HM_PFP$FDR<fdrth & HM_PFP$pvals<pvalth)
+    
+    HM_PFP<-HM_PFP[id,]
+    
+    NAMES<-HM_PFP$Pathway_name
+    NAMES<-str_replace_all(NAMES,',','//')
+    
+    np<-length(NAMES)
+    
+    print('Producing heatmaps for core-components of enriched pathways...')
+    
+    
+    for (i in 1:np){
+        currentGenes<-PATH_COLLECTION$HGNC_SYMBOL[[HM_PFP$Idx[i]]]
+        currentGenes<-intersect(currentGenes,rownames(EM))
+        
+        if (i == 1){
+            mutG<-currentGenes
+        }else{
+            mutG<-union(mutG,currentGenes)
+        }
+    }
+    
+    mutG<-sort(mutG)
+    
+    FREQS<-sort(rowSums(EM[mutG,]),decreasing=TRUE)
+    
+    MM<-SLE.buildPathMemb(mutG,HM_PFP$Idx,PATH_COLLECTION)
+    
+    cm<-fastgreedy.community(graph.incidence(MM))
+    
+    cmcardinality<-sort(summary(as.factor(cm$membership)),decreasing=TRUE)
+    
+    communities<-as.numeric(names(cmcardinality))
+    ncomm<-length(communities)
+    pb <- txtProgressBar(min=1,max=ncomm,style=3)
+    
+    for (i in 1:ncomm){
+        setTxtProgressBar(pb, i)
+        
+        filen<-paste(filename,'cm_',HM,'_',i,'.pdf',sep='')
+        elements<-cm$names[which(cm$membership==communities[i])]
+        subData<-MM[intersect(elements,rownames(MM)),intersect(elements,colnames(MM))]
+        
+        if (length(dim(subData))>0){
+            subData<-subData[order(rowSums(subData)),]
+            subData<-subData[,order(colSums(subData))]
+            verdata<-colnames(subData)
+        }else{
+            verdata<-intersect(elements,colnames(MM))
+        }
+        
+        verdata<-match(verdata,HM_PFP$Idx)
+        verdata<- HM_PFP$FDR[verdata]
+        if (length(dim(subData))>0){
+            names(verdata)<-PATH_COLLECTION$PATHWAY[as.numeric(colnames(subData))]
+            
+            SLE.plotMyHeat(subData,100*rowSums(EM[rownames(subData),])/ncol(EM),verdata,filename=filen)
+        }else{
+            names(verdata)<-PATH_COLLECTION$PATHWAY[as.numeric(intersect(elements,colnames(MM)))]
+            SLE.plotMyHeat(matrix(subData,length(subData),1,dimnames = list(names(subData),NULL)),100*rowSums(EM[names(subData),])/ncol(EM),verdata,
+                           filename=filen)
+        }
+        
+        
+        genesInCoreComponent<-100*rowSums(EM[rownames(subData),])/ncol(EM)
+        pathwaysAndEnrichsFDR<-verdata
+        
+        DATAtoPlot<-list(genesInCoreComponents=genesInCoreComponent,pathwaysAndFDR=pathwaysAndEnrichsFDR)
+        
+        save(DATAtoPlot,file=paste(filen,'.rdata',sep=''))
+        
+    }
+    Sys.sleep(1)
+    close(pb)
 }
-
 
 #documented
 SLAPE.readDataset<-function(filename){
@@ -591,14 +703,14 @@ SLAPE.readDataset<-function(filename){
 }
 SLAPE.check_and_fix_gs_Dataset<-function(Dataset,updated.hgnc.table){
     checked_gs<-checkGeneSymbols(rownames(Dataset),hgnc.table = updated.hgnc.table)    
-
+    
     non_approved_id<-which(checked_gs[,2]==FALSE)
     
     if (length(non_approved_id)>0){
-
+        
         print('The dataset contains non-approved gene symbols...')
         print('Outdated gene symbols have been updated:')
-
+        
         outdated_id<-non_approved_id[which(!is.na(checked_gs[non_approved_id,3]))]
         print(paste(checked_gs[outdated_id,1],'->',checked_gs[outdated_id,3]))
         
@@ -606,11 +718,11 @@ SLAPE.check_and_fix_gs_Dataset<-function(Dataset,updated.hgnc.table){
         if(length(non_approved_id)>0){
             print('The following non approved gene symbols have been removed:')
             print(checked_gs[non_approved_id,1])
-        
-            }
+            
+        }
         rownames(Dataset)[outdated_id]<-checked_gs[outdated_id,3]
         Dataset<-Dataset[setdiff(rownames(Dataset),rownames(Dataset)[non_approved_id]),]
-        }
+    }
     
     return(Dataset)
 }
@@ -1499,4 +1611,3 @@ SLAPE.vignette<-function(){
                                     PATH = 'temp.results/')
     
 }
-
