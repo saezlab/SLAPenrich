@@ -11,11 +11,19 @@ load('data/hm_colors.rdata')
 
 TYPES<-c('BRCA','COREAD','KIRC','LUAD','HNSC','SKCM','GBM','PRAD')
 
+TPR<-rep(0,length(TYPES))
+PPV<-rep(0,length(TYPES))
+COR<-rep(0,length(TYPES))
+
+names(TPR)<-TYPES
+names(PPV)<-TYPES
+names(COR)<-TYPES
+
 for (TYPE in TYPES){
 
     
     
-    pdf(paste('../../RESULTS/SLAPenrich/NOD_radialPlots/',TYPE,'.pdf',sep=''),width = 18,height = 5)
+#    pdf(paste('../../RESULTS/SLAPenrich/NOD_radialPlots/',TYPE,'.pdf',sep=''),width = 18,height = 5)
 #RES<-SLE.HallmarkAnalysis(TYPE=TYPE,PATH_COLLECTION = PATH_COLLECTION,HM_TABLE = RES$HallMark_Table,PATH = '../../RESULTS/SLAPenrich/PT_HM_20160718/',
 #                          removeDrivers=TRUE)
     par(mfrow=c(1,4))
@@ -92,6 +100,8 @@ for (TYPE in TYPES){
     NOD_HM<-PATT_VEC_NOD_HM$DATA[unique(names(PATT_VEC_NOD_HM$DATA))]/5
     
     
+    TPR[TYPE]<-100*x/n
+    PPV[TYPE]<-100*x/k
     
     barplot(100*c(x/n,x/k),col='gray',las=2,srt = 45,ylim=c(0,100),
             ylab='% pathways',main='novel vs. all variant analysis',cex.axis = 1.5,
@@ -102,9 +112,11 @@ for (TYPE in TYPES){
     
     legend('topleft',legend=paste('p = ',format(p,scientific=TRUE,digits=2),sep=''),cex = 1.5,bty = 'n')
     
+    COR[TYPE]<-cor(ALL_HM,NOD_HM,method = 'spearman')
+    
     plot(ALL_HM,NOD_HM,col=hm_colors[names(ALL_HM)],xlim=c(0,max(ALL_HM)),ylim=c(0,max(NOD_HM)),pch=16,cex=2,
          cex.lab=1.5,cex.axis=1.5,xlab='All variants',ylab='Novel variants',cex.main=1.5,
          main=paste('Hallmark footprints R = ',format(cor(ALL_HM,NOD_HM,method = 'spearman'),digits=2)))
     
-    dev.off()
+ #   dev.off()
 }
