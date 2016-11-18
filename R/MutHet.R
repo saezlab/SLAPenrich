@@ -53,7 +53,7 @@ NN<-names(nMutationsMean)
 COL<-
     IncludedCancerTypeAnnotations[NN,3]
     
-par(mfrow=c(1,2))
+par(mfrow=c(1,3))
 par(xpd=TRUE)
 plot(nMutationsMean,nEnrichedPathways,pch=21,log='y',frame.plot = FALSE,cex.lab=1.3,
      main=paste('R =',format(cor(nMutationsMean,nEnrichedPathways),digits = 3)),ylim=c(50,200),xlim=c(0,450),
@@ -61,12 +61,26 @@ plot(nMutationsMean,nEnrichedPathways,pch=21,log='y',frame.plot = FALSE,cex.lab=
      cex.main=1.8)
 text(nMutationsMean,nEnrichedPathways,names(nMutationsMean),pos = 3,cex=1)
 
+ncgs<-summary(as.factor(cancerDrivers$Tumor_Type))
+ncgs<-ncgs[names(nEnrichedPathways)]
+
+plot(ncgs,nEnrichedPathways,pch=21,log='y',frame.plot = FALSE,cex.lab=1.3,
+     main=paste('R =',format(cor(ncgs,nEnrichedPathways),digits = 3)),ylim=c(50,200),
+     xlab='n. cancer driver genes',ylab='',cex=1.5,bg=COL,col='black',
+     cex.main=1.8)
+text(ncgs,nEnrichedPathways,names(nMutationsMean),pos = 3,cex=1)
+
+
 
 plot(nSamples,nEnrichedPathways,pch=21,log='y',frame.plot = FALSE,cex.lab=1.3,
      main=paste('R =',format(cor(nSamples,nEnrichedPathways),digits = 3)),ylim=c(50,200),xlim=c(0,1200),
      xlab='n. samples',ylab='',cex=1.5,bg=COL,col='black',
      cex.main=1.8)
 text(nSamples,nEnrichedPathways,names(nMutationsMean),pos = 3,cex=1)
+
+load('data/IntoGen_cancer_drivers_13_06_2014.rdata')
+
+
 
 
 par(mfrow=c(1,1))
