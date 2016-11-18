@@ -7,7 +7,7 @@ library(ecolitk)
 source('R/SLAPenrich.R')
 source('../../../R_MAIN_PAPER_4.0/Fi_gdsc1000_CODE/MISC/my.hypTest.R')
 
-TYPE<-'BRCA'
+TYPE<-'SKCM'
 
 load(paste('../../RESULTS/SLAPenrich/PT_HM_20160623/',TYPE,'_HM.rdata',sep=''))
 tmp<- (RES$FDR<5 & RES$pvals<0.05 & RES$ME>50)
