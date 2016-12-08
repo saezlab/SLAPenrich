@@ -1,21 +1,20 @@
-\name{SLAPE.check_and_fix_gs_Dataset}
-\alias{SLAPE.check_and_fix_gs_Dataset}
+\name{SLAPE.check_and_fix_path_collection}
+\alias{SLAPE.check_and_fix_path_collection}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Check and fix gene symbol names in a genomic event dataset
+Check and fix gene symbol names in a collection of pathway gene sets.
 }
 \description{
-This function checks that the row names of a genomic dataset are actually updated official gene symbols approved by the HUGO Gene Nomenclature Committee (HGNC)
+This function checks that gene identifiers contained in a pathway gene set collection are actually updated official gene symbols approved by the HUGO Gene Nomenclature Committee (HGNC)
 (http://www.genenames.org).
 }
 \usage{
-SLAPE.check_and_fix_gs_Dataset(Dataset, updated.hgnc.table)
+SLAPE.check_and_fix_path_collection(pathColl, updated.hgnc.table)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{Dataset}{
-  An integer matrix modeling a genomic event dataset where row names are gene symbols and column names are sample identifiers.
-A non-null entry in the \eqn{i,j} position indicates the presence of a somatic mutation hosted by the \eqn{i}-th gene in the \eqn{j}-th sample (if the matrix is binary) or the number of point mutations hosted by the \eqn{i}-th gene in the \eqn{j}-th sample (if the matrix contains integers).
+  \item{pathColl}{
+  A list containing pathway gene-sets and annotations.
 }
   \item{updated.hgnc.table}{
     A data frame containing up-to-date approved HGNC symbols (Approved.Symbol variable) and their synonyms (Symbol variable). This is availalbe in the
@@ -28,8 +27,8 @@ A non-null entry in the \eqn{i,j} position indicates the presence of a somatic m
 %%  ~~ If necessary, more details than the description above ~~
 }
 \value{
-    The integer matrix provided in input but with row names updated to the most recent approved gene symbol and rows with not found
-    gene synonyms as names removed.
+    Pathway collection provided in input but with gene identifiers updated to the most recent approved gene symbols and
+    not approved symbols removed.
 }
 \references{
 %% ~put references to the literature/web site here ~
@@ -48,9 +47,10 @@ Francesco Iorio - iorio@ebi.ac.uk
 \code{\link{SLAPE.hgnc.table}}
 }
 \examples{
-data(LUAD_CaseStudy)
+data(SLAPE.PATHCOM_HUMAN)
 data(SLAPE.hgnc.table)
-updatedGeneSymbolsDataset<-SLAPE.check_and_fix_gs_Dataset(LUAD_CaseStudy,hgnc.table)
+updatedGeneSymbolsDataset<-
+SLAPE.check_and_fix_path_collection(PATHCHOM_HUMAN,hgnc.table)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

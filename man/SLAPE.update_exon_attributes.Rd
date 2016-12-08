@@ -25,14 +25,14 @@ Francesco Iorio - iorio@ebi.ac.uk
 }
 \note{
 A dataframe containing genomic coordinates of all the exon for all the genes in the genome, from Ensemble is precomputed and available in the
-  \code{\link{SLAPE.all_genes_exonic_lengths_ensemble_20160209}} data object.
+  \code{\link{SLAPE.all_genes_exonic_lengths_ensemble}} data object.
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link{SLAPE.all_genes_exonic_content_block_lengths_ensemble_20160209}},
-\code{\link{SLAPE.all_genes_exonic_lengths_ensemble_20160209}},
+\code{\link{SLAPE.all_genes_exonic_content_block_lengths_ensemble}},
+\code{\link{SLAPE.all_genes_exonic_lengths_ensemble}},
 \code{\link{SLAPE.compute_gene_exon_content_block_lengths}},
 \code{\link{SLAPE.gene_ecbl_length}}
 }

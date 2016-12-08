@@ -14,7 +14,7 @@ SLAPE.compute_gene_exon_content_block_lengths(ExonAttributes)
 \arguments{
   \item{ExonAttributes}{
     Dataframe containing genomic coordinates of all the exon for all the genes in the genome. This is available in the
-    \code{\link{SLAPE.all_genes_exonic_lengths_ensemble_20160209}} data object.
+    \code{\link{SLAPE.all_genes_exonic_lengths_ensemble}} data object.
 }
 }
 \details{
@@ -31,15 +31,15 @@ A genome-wide named vector containing the total exonic block lengths for all the
 }
 \note{
 The genome-wide exonic block lengths are precomputed and available in the
-\code{\link{SLAPE.all_genes_exonic_content_block_lengths_ensemble_20160209}}
+\code{\link{SLAPE.all_genes_exonic_content_block_lengths_ensemble}}
 data object, this function can be used to update this data object with the most-up-to-date information from Ensemble (using biomaRt functions).
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link{SLAPE.all_genes_exonic_content_block_lengths_ensemble_20160209}},
-\code{\link{SLAPE.all_genes_exonic_lengths_ensemble_20160209}},
+\code{\link{SLAPE.all_genes_exonic_content_block_lengths_ensemble}},
+\code{\link{SLAPE.all_genes_exonic_lengths_ensemble}},
 \code{\link{SLAPE.compute_gene_exon_content_block_lengths}},
 }
 \examples{

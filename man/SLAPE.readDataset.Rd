@@ -5,10 +5,9 @@
 Reading genomic evant dataset
 }
 \description{
-This function reads an integer matrix from csv file and it stores it into an integer matrix.
+This function reads a genomic dataset from a csv file and it stores it into an integer matrix.
 Row names of this matrix are official gene symbols and column names are sample identifiers.
-A non-null entry in the i,j position indicates the presence of a somatic mutation hosted by the i-th gene in the j-th sample
-(if the matrix is binary) or the number of point mutations hosted by the i-th gene in the j-th sample (if the matrix contains integers).
+A non-zero entry in the \eqn{i,j} position indicates the presence of  somatic mutation hosted by the \eqn{i}-th gene in the \eqn{j}-th sample (if the matrix is binary) or the number of point mutations hosted by the \eqn{i}-th gene in the \eqn{j}-th sample (if the matrix contains integers).
 }
 \usage{
 SLAPE.readDataset(filename)
@@ -24,8 +23,8 @@ The path of the csv file to be read and stored in the genomic event matrix.
 }
 \value{
 An integer matrix modeling a genomic event dataset. Row names of this matrix are official gene symbols and column names are sample identifiers.
-A non-null entry in the i,j position indicates the presence of a somatic mutation hosted by the i-th gene in the j-th sample
-(if the matrix is binary) or the number of point mutations hosted by the i-th gene in the j-th sample (if the matrix contains integers).
+A non-zero entry in the \eqn{i,j} position indicates the presence of a somatic mutation hosted by the \eqn{i}-th gene in the \eqn{j}-th sample
+(if the matrix is binary) or the number of point mutations hosted by the \eqn{i}-th gene in the \eqn{j}-th sample (if the matrix contains integers).
 }
 \references{
 %% ~put references to the literature/web site here ~

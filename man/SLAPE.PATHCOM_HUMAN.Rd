@@ -1,5 +1,5 @@
-\name{SLAPE.20140608_PATHCOM_HUMAN}
-\alias{SLAPE.20140608_PATHCOM_HUMAN}
+\name{SLAPE.PATHCOM_HUMAN}
+\alias{SLAPE.PATHCOM_HUMAN}
 \docType{data}
 \title{
 Collection of pahtway gene-sets from Pathway-Commons

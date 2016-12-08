@@ -14,7 +14,7 @@ SLAPE.gene_ecbl_length(ExonAttributes, GENE)
 \arguments{
   \item{ExonAttributes}{Dataframe containing genomic coordinates of all the exon for all the genes in the genome.
   This is available in the
-  \code{\link{SLAPE.all_genes_exonic_lengths_ensemble_20160209}} data object.
+  \code{\link{SLAPE.all_genes_exonic_lengths_ensemble}} data object.
 }
   \item{GENE}{
     A official HUGO gene symbol.
@@ -34,14 +34,15 @@ Francesco Iorio - iorio@ebi.ac.uk
 }
 \note{
 All the genome-wide exonic block lengths are precomputed and available in the
-\code{\link{SLAPE.all_genes_exonic_content_block_lengths_ensemble_20160209}} data object.
+\code{\link{SLAPE.all_genes_exonic_content_block_lengths_ensemble}} data object.
+This data object can be updated using the \code{\link{SLAPE.update_exon_attributes}} function.
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link{SLAPE.all_genes_exonic_lengths_ensemble_20160209}},
-\code{\link{SLAPE.all_genes_exonic_content_block_lengths_ensemble_20160209}}
+\code{\link{SLAPE.all_genes_exonic_lengths_ensemble}},
+\code{\link{SLAPE.all_genes_exonic_content_block_lengths_ensemble}}
 }
 \examples{
 

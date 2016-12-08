@@ -1,9 +1,8 @@
-\name{SLAPE.20140608_PATHCOM_HUMAN_nonredundant_intersection_hugoUpdated}
-\alias{SLAPE.20140608_PATHCOM_HUMAN_nonredundant_intersection_hugoUpdated}
+\name{SLAPE.PATHCOM_HUMAN_nr_i_hu_2014}
+\alias{SLAPE.PATHCOM_HUMAN_nr_i_hu_2014}
 \docType{data}
 \title{
-Collection of pahtway gene-sets from Pathway-Commons post-processed for redundancy reduction and to update composing gene name to recent HUGO
-gene symbols
+Collection of pahtway gene-sets from Pathway-Commons (v2014) post-processed for redundancy reduction and to update composing gene name to recent HUGO gene symbols
 }
 \description{
 A list containing pathway gene-sets from multiple public resources, downloaded from Pathway-Commons and post-processed to reduce
@@ -37,13 +36,13 @@ contained in the \code{SLAPE.hgnc.table_20160210} data object (which can be itse
 
 }
 \source{
-This list was assembled from the collection of pathway gene sets from the Pathway-Commons data portal (v4-201311) (Cerami et al, 2011) (\url{http://www.pathwaycommons.org/archives/PC2/v4-201311/}). 
+This list was assembled from the collection of pathway gene sets from the Pathway-Commons data portal (v4-201311) (Cerami et al, 2011) (\url{http://www.pathwaycommons.org/archives/PC2/v4/}). 
 }
 \references{
 Cerami EG, Gross BE, Demir E, Rodchenkov I, Babur O, Anwar N, et al. Pathway Commons, a web resource for biological pathway data. Nucleic Acids Res. 2011;39:D685-90
 }
 \seealso{
-\code{\link{SLAPE.20140608_PATHCOM_HUMAN}},
+\code{\link{SLAPE.PATHCOM_HUMAN}},
 \code{\link{SLAPE.update_HGNC_Table}}
 }
 \keyword{datasets}

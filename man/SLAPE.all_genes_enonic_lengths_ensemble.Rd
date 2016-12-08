@@ -1,5 +1,5 @@
-\name{SLAPE.all_genes_exonic_lengths_ensemble_20160209}
-\alias{SLAPE.all_genes_exonic_lengths_ensemble_20160209}
+\name{SLAPE.all_genes_exonic_lengths_ensemble}
+\alias{SLAPE.all_genes_exonic_lengths_ensemble}
 \docType{data}
 \title{
 Genome-wide exone attributes and genomic coordinates
@@ -15,11 +15,11 @@ A data frame containing attributes and chromosomal coordinate of all the gene ex
     \item{\code{exon_chrom_start}}{Numerical vector containing chromosomal start positions;}
     \item{\code{exon_chrom_end}}{Numerical vector containing chromosomal end positions}
   }
-  Please note that the name of this list is \code{GEA}.
+  Variable name: \code{GEA}.
 }
 \details{
 This list has been assembled by using functions from the \code{biomaRt} package and can be updated 
-using the \code{SLAPE.update_exon_attributes} function.
+using the \code{SLAPE.update_exon_attributes}.
 }
 \note{This object is used by the \code{SLAPE.compute_gene_exon_content_block_lengths} and \code{SLAPE.gene_ecbl_length} function to compute
 the genome-wide total exonic block lengths or the total exonic block length of a given gene, respectively.}
