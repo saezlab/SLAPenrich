@@ -6,12 +6,13 @@ export(SLAPE.update_exon_attributes)
 export(SLAPE.gene_ecbl_length)
 export(SLAPE.compute_gene_exon_content_block_lengths)
 export(SLAPE.analyse)
+export(SLAPE.write.table)
+export(SLAPE.serialPathVis)
 
-#export(SLAPE.write.table)
 #export(SLAPE.heuristic_mut_ex_sorting)
 
 #export(SLAPE.pathvis)
-#export(SLAPE.serialPathVis)
+
 #export(SLAPE.core_components)
 #export(SLAPE.diff_SLAPE_analysis)
 

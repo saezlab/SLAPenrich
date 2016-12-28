@@ -433,6 +433,94 @@ SLAPE.analyse<-function(EM,
                 pathway_exclusiveCoverage=pathwayExclusive_coverage,
                 pathway_individualEMs=pathway_individualEMs))
 }
+SLAPE.write.table<-function(PFP,EM,filename='',fdrth=Inf,exclcovth=0,PATH_COLLECTION,GeneLenghts){
+    
+    id<-which(PFP$pathway_exclusiveCoverage>exclcovth & PFP$pathway_perc_fdr<fdrth)
+    
+    PFP$pathway_id<-PFP$pathway_id[id]
+    PFP$pathway_mus<-PFP$pathway_mus[id]
+    PFP$pathway_EM<-PFP$pathway_EM[id,]
+    PFP$pathway_logOddRatios<-PFP$pathway_logOddRatios[id]
+    PFP$pathway_pvals<-PFP$pathway_pvals[id]
+    PFP$pathway_perc_fdr<-PFP$pathway_perc_fdr[id]
+    PFP$pathway_exclusiveCoverage<-PFP$pathway_exclusiveCoverage[id]
+    PFP$pathway_Probability<-PFP$pathway_Probability[id,]
+    
+    NAMES<-PATH_COLLECTION$PATHWAY[PFP$pathway_id]
+    
+    NAMES<-str_replace_all(NAMES,',','//')
+    
+    
+    TOTexlength<-rep(NA,length(NAMES))
+    
+    for (i in 1:length(NAMES)){
+        TOTexlength[i]<-sum(GeneLenghts[PATH_COLLECTION$HGNC_SYMBOL[[PFP$pathway_id[i]]]],na.rm=TRUE)    
+    }
+    
+    np<-length(PFP$pathway_id)
+    mutGenes<-rep('',length(np))
+    for (i in 1:np){
+        currentGenes<-PATH_COLLECTION$HGNC_SYMBOL[[PFP$pathway_id[i]]]
+        currentGenes<-intersect(currentGenes,rownames(EM))
+        
+        if (length(currentGenes)>1){
+            freqs<-sort(100*rowSums(sign(EM[currentGenes,]))/ncol(EM),decreasing=TRUE)
+            freqs<-freqs[freqs>0]
+            mutGenes[i]<-paste(paste(names(freqs),' (',format(freqs,digits=2),' %)',sep=''),collapse=' ')
+        }else{
+            freqs<-100*sum(sign(EM[currentGenes,]))/ncol(EM)
+            mutGenes[i]<-paste(paste(currentGenes,' (',format(freqs,digits=2),' %)',sep=''),collapse=' ')
+        }
+    }
+    
+    totres<-cbind(NAMES,
+                  PFP$pathway_id,
+                  PATH_COLLECTION$Ngenes[PFP$pathway_id],
+                  TOTexlength,
+                  PFP$pathway_mus,
+                  rowSums(PFP$pathway_EM),
+                  PFP$pathway_logOddRatios,
+                  PFP$pathway_pvals,
+                  PFP$pathway_perc_fdr,
+                  PFP$pathway_exclusiveCoverage,
+                  mutGenes,
+                  PFP$pathway_Probability)
+    
+    colnames(totres)<-c('Pathway',
+                        'Internal Id',
+                        'n.genes.in.rep',
+                        'total Exonic Content Block length',
+                        '(E)xpected n.mut in path',
+                        '(O)bserved n.mut in path',
+                        'log10 (oddRatio=(O/E))',
+                        'pval',
+                        '% FDR',
+                        'ExclusiveCoverage',
+                        'Mutated Genes',paste('prob ',colnames(PFP$pathway_Probability)))
+    
+    write.csv(totres,file=filename,quote=FALSE,row.names=FALSE)
+}
+SLAPE.serialPathVis<-function(EM,PFP,fdrth=5,exCovTh=50,PATH='./',PATH_COLLECTION){
+    Ids<-which(PFP$pathway_perc_fdr<fdrth & PFP$pathway_exclusiveCoverage>exCovTh)
+    
+    if (length(Ids)==0){
+        warning(paste('No significant enrichments identified at the selected fdr threshold! min fdr % =',
+                      min(PFP$pathway_perc_fdr)))
+    }else{
+        
+        print('Producing plots for significantly SL enriched pathways...')
+        pb <- txtProgressBar(min=1,max=length(Ids),style=3)
+        
+        for (i in 1:length(Ids)){
+            
+            setTxtProgressBar(pb, i)
+            SLAPE.pathvis(EM = EM,PFP = PFP,prefName = i,Id = PFP$pathway_id[Ids[i]],PATH = PATH,PATH_COLLECTION = PATH_COLLECTION)
+        }
+        Sys.sleep(1)
+        close(pb)
+        print('+ Done!')
+    }
+}
 
 
 
@@ -865,73 +953,6 @@ SLE.PFPtoHM<-function(PFPw,HM_TABLE,PATH_COLLECTION){
 
 
 # 
-# SLAPE.write.table<-function(PFP,EM,filename='',fdrth=Inf,exclcovth=0,PATH_COLLECTION,GeneLenghts){
-#     
-#     id<-which(PFP$pathway_exclusiveCoverage>exclcovth & PFP$pathway_perc_fdr<fdrth)
-#     
-#     PFP$pathway_id<-PFP$pathway_id[id]
-#     PFP$pathway_mus<-PFP$pathway_mus[id]
-#     PFP$pathway_EM<-PFP$pathway_EM[id,]
-#     PFP$pathway_logOddRatios<-PFP$pathway_logOddRatios[id]
-#     PFP$pathway_pvals<-PFP$pathway_pvals[id]
-#     PFP$pathway_perc_fdr<-PFP$pathway_perc_fdr[id]
-#     PFP$pathway_exclusiveCoverage<-PFP$pathway_exclusiveCoverage[id]
-#     PFP$pathway_Probability<-PFP$pathway_Probability[id,]
-#     
-#     NAMES<-PATH_COLLECTION$PATHWAY[PFP$pathway_id]
-#     
-#     NAMES<-str_replace_all(NAMES,',','//')
-#     
-#     
-#     TOTexlength<-rep(NA,length(NAMES))
-#     
-#     for (i in 1:length(NAMES)){
-#         TOTexlength[i]<-sum(GeneLenghts[PATH_COLLECTION$HGNC_SYMBOL[[PFP$pathway_id[i]]]],na.rm=TRUE)    
-#     }
-#     
-#     np<-length(PFP$pathway_id)
-#     mutGenes<-rep('',length(np))
-#     for (i in 1:np){
-#         currentGenes<-PATH_COLLECTION$HGNC_SYMBOL[[PFP$pathway_id[i]]]
-#         currentGenes<-intersect(currentGenes,rownames(EM))
-#         
-#         if (length(currentGenes)>1){
-#             freqs<-sort(100*rowSums(sign(EM[currentGenes,]))/ncol(EM),decreasing=TRUE)
-#             freqs<-freqs[freqs>0]
-#             mutGenes[i]<-paste(paste(names(freqs),' (',format(freqs,digits=2),' %)',sep=''),collapse=' ')
-#         }else{
-#             freqs<-100*sum(sign(EM[currentGenes,]))/ncol(EM)
-#             mutGenes[i]<-paste(paste(currentGenes,' (',format(freqs,digits=2),' %)',sep=''),collapse=' ')
-#         }
-#     }
-#     
-#     totres<-cbind(NAMES,
-#                   PFP$pathway_id,
-#                   PATH_COLLECTION$Ngenes[PFP$pathway_id],
-#                   TOTexlength,
-#                   PFP$pathway_mus,
-#                   rowSums(PFP$pathway_EM),
-#                   PFP$pathway_logOddRatios,
-#                   PFP$pathway_pvals,
-#                   PFP$pathway_perc_fdr,
-#                   PFP$pathway_exclusiveCoverage,
-#                   mutGenes,
-#                   PFP$pathway_Probability)
-#     
-#     colnames(totres)<-c('Pathway',
-#                         'Internal Id',
-#                         'n.genes.in.rep',
-#                         'total Exonic Content Block length',
-#                         '(E)xpected n.mut in path',
-#                         '(O)bserved n.mut in path',
-#                         'log10 (oddRatio=(O/E))',
-#                         'pval',
-#                         '% FDR',
-#                         'ExclusiveCoverage',
-#                         'Mutated Genes',paste('prob ',colnames(PFP$pathway_Probability)))
-#     
-#     write.csv(totres,file=filename,quote=FALSE,row.names=FALSE)
-# }
 # SLAPE.heuristic_mut_ex_sorting<-function(mutPatterns){
 #     
 #     mutPatterns<-sign(mutPatterns)
@@ -1076,27 +1097,7 @@ SLE.PFPtoHM<-function(PFPw,HM_TABLE,PATH_COLLECTION){
 #     
 #     dev.off()
 # }
-# SLAPE.serialPathVis<-function(EM,PFP,fdrth=5,exCovTh=50,PATH='./',PATH_COLLECTION){
-#     Ids<-which(PFP$pathway_perc_fdr<fdrth & PFP$pathway_exclusiveCoverage>exCovTh)
-#     
-#     if (length(Ids)==0){
-#         warning(paste('No significant enrichments identified at the selected fdr threshold! min fdr % =',
-#                       min(PFP$pathway_perc_fdr)))
-#     }else{
-#         
-#         print('Producing plots for significantly SL enriched pathways...')
-#         pb <- txtProgressBar(min=1,max=length(Ids),style=3)
-#         
-#         for (i in 1:length(Ids)){
-#             
-#             setTxtProgressBar(pb, i)
-#             SLAPE.pathvis(EM = EM,PFP = PFP,prefName = i,Id = PFP$pathway_id[Ids[i]],PATH = PATH,PATH_COLLECTION = PATH_COLLECTION)
-#         }
-#         Sys.sleep(1)
-#         close(pb)
-#         print('+ Done!')
-#     }
-# }
+
 # SLAPE.core_components<-function(PFP,EM,PATH='./',fdrth=Inf,exclcovth=0,PATH_COLLECTION){
 #     
 #     filename<-PATH
