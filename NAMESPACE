@@ -8,20 +8,17 @@ export(SLAPE.compute_gene_exon_content_block_lengths)
 export(SLAPE.analyse)
 export(SLAPE.write.table)
 export(SLAPE.serialPathVis)
-
-#export(SLAPE.heuristic_mut_ex_sorting)
-
-#export(SLAPE.pathvis)
+export(SLAPE.pathvis)
+export(SLAPE.heuristic_mut_ex_sorting)
 
 #export(SLAPE.core_components)
 #export(SLAPE.diff_SLAPE_analysis)
 
-
-#import(HGNChelper)
-#import(stringr)
-#import(poibin)
-#import(pheatmap)
-#import(qvalue)
-#import(igraph)
-#import(biomaRt)
+import(HGNChelper)
+import(stringr)
+import(poibin)
+import(pheatmap)
+import(qvalue)
+import(igraph)
+import(biomaRt)
 

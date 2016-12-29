@@ -522,6 +522,91 @@ SLAPE.serialPathVis<-function(EM,PFP,fdrth=5,exCovTh=50,PATH='./',PATH_COLLECTIO
     }
 }
 
+SLAPE.heuristic_mut_ex_sorting<-function(mutPatterns){
+    
+    mutPatterns<-sign(mutPatterns)
+    
+    if(dim(mutPatterns)[1]==1){
+        mutPatterns<-matrix(c(mutPatterns[,order(mutPatterns,decreasing=TRUE)]),
+                            1,ncol(mutPatterns),
+                            dimnames = list(rownames(mutPatterns),colnames(mutPatterns)))
+        
+        return(mutPatterns)
+    }
+    
+    if(dim(mutPatterns)[2]==1){
+        mutPatterns<-matrix(c(mutPatterns[order(mutPatterns,decreasing=TRUE),]),
+                            nrow(mutPatterns),1,
+                            dimnames = list(rownames(mutPatters),colnames(mutPatterns)))
+        return(mutPatterns)
+    }
+    
+    nsamples<-ncol(mutPatterns)
+    
+    coveredGenes<-NA
+    uncoveredGenes<-rownames(mutPatterns)
+    
+    if (length(uncoveredGenes)>1){
+        
+        idNull<-which(colSums(mutPatterns)==0)
+        nullCol<-matrix(c(mutPatterns[,idNull]),nrow(mutPatterns),length(idNull),dimnames = list(rownames(mutPatterns),colnames(mutPatterns)[idNull]))
+        
+        idNonNull<-which(colSums(mutPatterns)>0)
+        mutPatterns<-matrix(c(mutPatterns[,idNonNull]),nrow(mutPatterns),length(idNonNull),dimnames=list(rownames(mutPatterns),colnames(mutPatterns)[idNonNull]))
+        
+        coveredSamples<-NA
+        uncoveredSamples<-colnames(mutPatterns)
+        BS<-NA
+        
+        while(length(uncoveredGenes)>0 & length(uncoveredSamples)>0){
+            
+            patterns<-matrix(c(mutPatterns[uncoveredGenes,uncoveredSamples]),
+                             nrow = length(uncoveredGenes),
+                             ncol = length(uncoveredSamples),
+                             dimnames = list(uncoveredGenes,uncoveredSamples))
+            
+            if(length(uncoveredGenes)>1){
+                bestInClass<-SLE.findBestInClass(patterns)
+            }else{
+                bestInClass<-uncoveredGenes
+            }
+            
+            if(is.na(BS[1])){
+                BS<-bestInClass
+            }else{
+                BS<-c(BS,bestInClass)
+            }
+            
+            if(is.na(coveredGenes[1])){
+                coveredGenes<-bestInClass
+            }else{
+                coveredGenes<-c(coveredGenes,bestInClass)
+            }
+            
+            uncoveredGenes<-setdiff(uncoveredGenes,coveredGenes)
+            toCheck<-matrix(c(patterns[bestInClass,uncoveredSamples]),nrow = 1,ncol=ncol(patterns),dimnames = list(bestInClass,uncoveredSamples))
+            
+            if (length(coveredGenes)==1){
+                coveredSamples<-names(which(colSums(toCheck)>0))
+            }else{
+                coveredSamples<-c(coveredSamples,names(which(colSums(toCheck)>0)))
+            }
+            
+            uncoveredSamples<-setdiff(uncoveredSamples,coveredSamples)
+            
+        }
+        
+        BS<-c(BS,uncoveredGenes)
+        
+        CID<-SLE.rearrangeMatrix(mutPatterns,BS)
+        
+        FINALMAT<-mutPatterns[BS,CID]
+        
+        FINALMAT<-cbind(FINALMAT,nullCol[rownames(FINALMAT),])
+        
+        return(FINALMAT)
+    }
+}
 
 
 #internal functions
@@ -863,9 +948,65 @@ SLE.PFPtoHM<-function(PFPw,HM_TABLE,PATH_COLLECTION){
     return(RES)
 }
 
-
-#exported functions
-
+SLAPE.pathvis<-function(EM,PFP,Id,prefName=NULL,PATH='./',PATH_COLLECTION){
+    
+    genes<-PATH_COLLECTION$HGNC_SYMBOL[[Id]]
+    
+    nGenesInPath<-length(genes)
+    genes<-intersect(genes,rownames(EM))
+    
+    fn<-paste(PATH,prefName,'_',Id,'_a.pdf',sep='')
+    
+    toPlot<-matrix(c(EM[genes,]),nrow = length(genes),ncol = ncol(EM),dimnames = list(genes,colnames(EM)))
+    
+    Pid<-which(PFP$pathway_id==Id)
+    
+    toPlot<-
+        SLAPE.heuristic_mut_ex_sorting(toPlot)
+    
+    FDR<-PFP$pathway_perc_fdr[which(PFP$pathway_id==Id)]
+    
+    if (FDR<0){
+        FDR<-format(FDR,scientific=TRUE,digits = 3)
+    }else{
+        FDR<-format(FDR,digits = 3)
+    }
+    
+    NAME<-PATH_COLLECTION$PATHWAY[Id]
+    
+    NAME<-paste(str_trim(unlist(str_split(NAME,'//'))),collapse='\n')
+    
+    MAIN<-paste(NAME,'\n\n','SLAPenrich FDR ',FDR,' %',sep='')
+    
+    pheatmap(toPlot,cluster_rows = FALSE,cluster_cols = FALSE,
+             filename = fn,col=c('white','blue'),
+             cellheight = 40,
+             legend_breaks=c(0,1),
+             legend_labels=c('wt','mut'),
+             main=MAIN)
+    
+    pdf(paste(PATH,prefName,'_',PFP$pathway_id[Pid],'_bars.pdf',sep=''))
+    
+    par(mfrow=c(3,1))
+    
+    barplot(colSums(EM),las=2,main='n. mutated genes per sample',names.arg = '')
+    
+    
+    barplot(PFP$pathway_Probability[Pid,],las=2,main='p(one mutation in this pathway)',log = 'y',
+            xlab=paste('Expected number of samples with mutation in this pathway =',
+                       format(sum(PFP$pathway_Probability[Pid,]),digits=2)),names.arg = '')
+    
+    if(length(genes)>1){
+        EM<-as.numeric(sign(colSums(EM[genes,])))
+    }else{
+        EM<-as.numeric(EM[genes,])
+    }
+    
+    barplot(EM,las=2,
+            main=paste('Samples with mutations in this pathway =',sum(EM)),names.arg = '',xlab='samples',yaxt='n')
+    
+    dev.off()
+}
 
 # 
 # SLAPE.HM_core_components<-function(HM_PFP,HM,EM,PATH='./',fdrth=Inf,exclcovth=0,PATH_COLLECTION){
@@ -952,151 +1093,8 @@ SLE.PFPtoHM<-function(PFPw,HM_TABLE,PATH_COLLECTION){
 # 
 
 
-# 
-# SLAPE.heuristic_mut_ex_sorting<-function(mutPatterns){
-#     
-#     mutPatterns<-sign(mutPatterns)
-#     
-#     if(dim(mutPatterns)[1]==1){
-#         mutPatterns<-matrix(c(mutPatterns[,order(mutPatterns,decreasing=TRUE)]),
-#                             1,ncol(mutPatterns),
-#                             dimnames = list(rownames(mutPatterns),colnames(mutPatterns)))
-#         
-#         return(mutPatterns)
-#     }
-#     
-#     if(dim(mutPatterns)[2]==1){
-#         mutPatterns<-matrix(c(mutPatterns[order(mutPatterns,decreasing=TRUE),]),
-#                             nrow(mutPatterns),1,
-#                             dimnames = list(rownames(mutPatters),colnames(mutPatterns)))
-#         return(mutPatterns)
-#     }
-#     
-#     nsamples<-ncol(mutPatterns)
-#     
-#     coveredGenes<-NA
-#     uncoveredGenes<-rownames(mutPatterns)
-#     
-#     if (length(uncoveredGenes)>1){
-#         
-#         idNull<-which(colSums(mutPatterns)==0)
-#         nullCol<-matrix(c(mutPatterns[,idNull]),nrow(mutPatterns),length(idNull),dimnames = list(rownames(mutPatterns),colnames(mutPatterns)[idNull]))
-#         
-#         idNonNull<-which(colSums(mutPatterns)>0)
-#         mutPatterns<-matrix(c(mutPatterns[,idNonNull]),nrow(mutPatterns),length(idNonNull),dimnames=list(rownames(mutPatterns),colnames(mutPatterns)[idNonNull]))
-#         
-#         coveredSamples<-NA
-#         uncoveredSamples<-colnames(mutPatterns)
-#         BS<-NA
-#         
-#         while(length(uncoveredGenes)>0 & length(uncoveredSamples)>0){
-#             
-#             patterns<-matrix(c(mutPatterns[uncoveredGenes,uncoveredSamples]),
-#                              nrow = length(uncoveredGenes),
-#                              ncol = length(uncoveredSamples),
-#                              dimnames = list(uncoveredGenes,uncoveredSamples))
-#             
-#             if(length(uncoveredGenes)>1){
-#                 bestInClass<-SLE.findBestInClass(patterns)
-#             }else{
-#                 bestInClass<-uncoveredGenes
-#             }
-#             
-#             if(is.na(BS[1])){
-#                 BS<-bestInClass
-#             }else{
-#                 BS<-c(BS,bestInClass)
-#             }
-#             
-#             if(is.na(coveredGenes[1])){
-#                 coveredGenes<-bestInClass
-#             }else{
-#                 coveredGenes<-c(coveredGenes,bestInClass)
-#             }
-#             
-#             uncoveredGenes<-setdiff(uncoveredGenes,coveredGenes)
-#             toCheck<-matrix(c(patterns[bestInClass,uncoveredSamples]),nrow = 1,ncol=ncol(patterns),dimnames = list(bestInClass,uncoveredSamples))
-#             
-#             if (length(coveredGenes)==1){
-#                 coveredSamples<-names(which(colSums(toCheck)>0))
-#             }else{
-#                 coveredSamples<-c(coveredSamples,names(which(colSums(toCheck)>0)))
-#             }
-#             
-#             uncoveredSamples<-setdiff(uncoveredSamples,coveredSamples)
-#             
-#         }
-#         
-#         BS<-c(BS,uncoveredGenes)
-#         
-#         CID<-SLE.rearrangeMatrix(mutPatterns,BS)
-#         
-#         FINALMAT<-mutPatterns[BS,CID]
-#         
-#         FINALMAT<-cbind(FINALMAT,nullCol[rownames(FINALMAT),])
-#         
-#         return(FINALMAT)
-#     }
-# }
-# SLAPE.pathvis<-function(EM,PFP,Id,prefName=NULL,PATH='./',PATH_COLLECTION){
-#     
-#     genes<-PATH_COLLECTION$HGNC_SYMBOL[[Id]]
-#     
-#     nGenesInPath<-length(genes)
-#     genes<-intersect(genes,rownames(EM))
-#     
-#     fn<-paste(PATH,prefName,'_',Id,'_a.pdf',sep='')
-#     
-#     toPlot<-matrix(c(EM[genes,]),nrow = length(genes),ncol = ncol(EM),dimnames = list(genes,colnames(EM)))
-#     
-#     Pid<-which(PFP$pathway_id==Id)
-#     
-#     toPlot<-
-#         SLAPE.heuristic_mut_ex_sorting(toPlot)
-#     
-#     FDR<-PFP$pathway_perc_fdr[which(PFP$pathway_id==Id)]
-#     
-#     if (FDR<0){
-#         FDR<-format(FDR,scientific=TRUE,digits = 3)
-#     }else{
-#         FDR<-format(FDR,digits = 3)
-#     }
-#     
-#     NAME<-PATH_COLLECTION$PATHWAY[Id]
-#     
-#     NAME<-paste(str_trim(unlist(str_split(NAME,'//'))),collapse='\n')
-#     
-#     MAIN<-paste(NAME,'\n\n','SLAPenrich FDR ',FDR,' %',sep='')
-#     
-#     pheatmap(toPlot,cluster_rows = FALSE,cluster_cols = FALSE,
-#              filename = fn,col=c('white','blue'),
-#              cellheight = 40,
-#              legend_breaks=c(0,1),
-#              legend_labels=c('wt','mut'),
-#              main=MAIN)
-#     
-#     pdf(paste(PATH,prefName,'_',PFP$pathway_id[Pid],'_bars.pdf',sep=''))
-#     
-#     par(mfrow=c(3,1))
-#     
-#     barplot(colSums(EM),las=2,main='n. mutated genes per sample',names.arg = '')
-#     
-#     
-#     barplot(PFP$pathway_Probability[Pid,],las=2,main='p(one mutation in this pathway)',log = 'y',
-#             xlab=paste('Expected number of samples with mutation in this pathway =',
-#                        format(sum(PFP$pathway_Probability[Pid,]),digits=2)),names.arg = '')
-#     
-#     if(length(genes)>1){
-#         EM<-as.numeric(sign(colSums(EM[genes,])))
-#     }else{
-#         EM<-as.numeric(EM[genes,])
-#     }
-#     
-#     barplot(EM,las=2,
-#             main=paste('Samples with mutations in this pathway =',sum(EM)),names.arg = '',xlab='samples',yaxt='n')
-#     
-#     dev.off()
-# }
+ 
+
 
 # SLAPE.core_components<-function(PFP,EM,PATH='./',fdrth=Inf,exclcovth=0,PATH_COLLECTION){
 #     
