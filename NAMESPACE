@@ -10,9 +10,8 @@ export(SLAPE.write.table)
 export(SLAPE.serialPathVis)
 export(SLAPE.pathvis)
 export(SLAPE.heuristic_mut_ex_sorting)
-
-#export(SLAPE.core_components)
-#export(SLAPE.diff_SLAPE_analysis)
+export(SLAPE.core_components)
+export(SLAPE.diff_SLAPE_analysis)
 
 import(HGNChelper)
 import(stringr)
