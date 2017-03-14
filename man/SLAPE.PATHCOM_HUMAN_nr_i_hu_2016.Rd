@@ -17,7 +17,7 @@ their overlaps (see details) and update gene names.
     \item{\code{SOURCE}}{A string vector in which the \eqn{i}-th entry contains the Pathway-Commons description of the source of the                               \eqn{i}-th pathway, or sources of multiple merged pathways;}
     \item{\code{UNIPROTID}}{A list in which the \eqn{i}-th element is a string vector containing the uniprot identifiers of the genes                                 belonging to the \eqn{i}-th pathway;}
     \item{\code{HGNC_SYMBOL}}{A list in which the \eqn{i}-th element is a string vector containing the official HUGO symbols of the genes                                 belonging to the \eqn{i}-th pathway or multiple merged pathways, differently from
-    \code{SLAPE.20140608_PATHCOM_HUMAN_nonredundant_intersection_hugoUpdated} in this object these symbols are updated to recent nomenclature;}
+    \code{SLAPE.PATHCOM_HUMAN_nr_i_hu} in this object these symbols are updated to recent nomenclature;}
     \item{\code{Ngenes}}{An integer vector in which the \eqn{i}-th element is the number of genes belonging to the \eqn{i}-th pathway;}
     \item{\code{backGround}}{A string vector containing the HUGO symbols of all the genes belonging to at least one pathway;}
     \item{\code{miniSOURCE}}{A string vector in which the \eqn{i}-th entry contains the name of the source of the                                                      \eqn{i}-th pathway (panther, humancyc, pid or reactome);}
@@ -33,7 +33,7 @@ Given two gene sets \eqn{P_1} and \eqn{P_2} the corresponding \eqn{J(P_1,P_2)} i
 \deqn{J(P_1,P_2)=\frac{|P_1 \cap P_2|}{|P_1 \cup P_2|}}{J(P_1,P_2)=(|P_1 ∩ P_2|)/(|P_1 ∪ P_2|)}.
 
 Additionally, all the pathway gene sets contained in this object are updated to recent official HUGO gene nomenclatures, using the informations
-contained in the \code{SLAPE.hgnc.table_20160210} data object (which can be itself updated using the dedicated function \code{SLAPE.update_HGNC_Table}).
+contained in the \code{SLAPE.hgnc.table} data object (which can be itself updated using the dedicated function \code{SLAPE.update_HGNC_Table}).
 
 }
 \source{
@@ -43,7 +43,7 @@ This list was assembled from the collection of pathway gene sets from the Pathwa
 Cerami EG, Gross BE, Demir E, Rodchenkov I, Babur O, Anwar N, et al. Pathway Commons, a web resource for biological pathway data. Nucleic Acids Res. 2011;39:D685-90
 }
 \seealso{
-\code{\link{SLAPE.20140608_PATHCOM_HUMAN}},
+\code{\link{SLAPE.PATHCOM_HUMAN}},
 \code{\link{SLAPE.update_HGNC_Table}}
 }
 \keyword{datasets}
