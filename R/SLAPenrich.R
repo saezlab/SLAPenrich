@@ -812,6 +812,96 @@ SLAPE.diff_SLAPE_analysis<-function(EM,contrastMatrix,positiveCondition,negative
     
     return(RES)
 }
+SLAPE.core_components<-function(PFP,EM,PATH='./',fdrth=Inf,exclcovth=0,PATH_COLLECTION){
+    
+    filename<-PATH
+    EM<-sign(EM)
+    
+    id<-which(PFP$pathway_exclusiveCoverage>exclcovth & PFP$pathway_perc_fdr<fdrth)
+    
+    PFP$pathway_id<-PFP$pathway_id[id]
+    PFP$pathway_mus<-PFP$pathway_mus[id]
+    PFP$pathway_EM<-PFP$pathway_EM[id,]
+    PFP$pathway_logOddRatios<-PFP$pathway_logOddRatios[id]
+    PFP$pathway_pvals<-PFP$pathway_pvals[id]
+    PFP$pathway_perc_fdr<-PFP$pathway_perc_fdr[id]
+    PFP$pathway_exclusiveCoverage<-PFP$pathway_exclusiveCoverage[id]
+    PFP$pathway_Probability<-PFP$pathway_Probability[id,]
+    
+    NAMES<-PATH_COLLECTION$PATHWAY[PFP$pathway_id]
+    
+    NAMES<-str_replace_all(NAMES,',','//')
+    
+    np<-length(PFP$pathway_id)
+    
+    print('Producing heatmaps for core-components of enriched pathways...')
+    
+    
+    for (i in 1:np){
+        currentGenes<-PATH_COLLECTION$HGNC_SYMBOL[[PFP$pathway_id[i]]]
+        currentGenes<-intersect(currentGenes,rownames(EM))
+        
+        if (i == 1){
+            mutG<-currentGenes
+        }else{
+            mutG<-union(mutG,currentGenes)
+        }
+    }
+    
+    mutG<-sort(mutG)
+    
+    FREQS<-sort(rowSums(EM[mutG,]),decreasing=TRUE)
+    
+    MM<-SLE.buildPathMemb(mutG,PFP$pathway_id,PATH_COLLECTION)
+    
+    cm<-fastgreedy.community(graph.incidence(MM))
+    
+    cmcardinality<-sort(summary(as.factor(cm$membership)),decreasing=TRUE)
+    
+    communities<-as.numeric(names(cmcardinality))
+    ncomm<-length(communities)
+    pb <- txtProgressBar(min=1,max=ncomm,style=3)
+    
+    for (i in 1:ncomm){
+        setTxtProgressBar(pb, i)
+        
+        filen<-paste(filename,'cm_',i,'.pdf',sep='')
+        elements<-cm$names[which(cm$membership==communities[i])]
+        subData<-MM[intersect(elements,rownames(MM)),intersect(elements,colnames(MM))]
+        
+        if (length(dim(subData))>0){
+            subData<-subData[order(rowSums(subData)),]
+            subData<-subData[,order(colSums(subData))]
+            verdata<-colnames(subData)
+        }else{
+            verdata<-intersect(elements,colnames(MM))
+        }
+        
+        verdata<-match(verdata,PFP$pathway_id)
+        verdata<- PFP$pathway_perc_fdr[verdata]
+        if (length(dim(subData))>0){
+            names(verdata)<-PATH_COLLECTION$PATHWAY[as.numeric(colnames(subData))]
+            
+            SLE.plotMyHeat(subData,100*rowSums(EM[rownames(subData),])/ncol(EM),verdata,filename=filen)
+        }else{
+            names(verdata)<-PATH_COLLECTION$PATHWAY[as.numeric(intersect(elements,colnames(MM)))]
+            SLE.plotMyHeat(matrix(subData,length(subData),1,dimnames = list(names(subData),NULL)),100*rowSums(EM[names(subData),])/ncol(EM),verdata,
+                           filename=filen)
+        }
+        
+        
+        genesInCoreComponent<-100*rowSums(EM[rownames(subData),])/ncol(EM)
+        pathwaysAndEnrichsFDR<-verdata
+        
+        DATAtoPlot<-list(genesInCoreComponents=genesInCoreComponent,pathwaysAndFDR=pathwaysAndEnrichsFDR)
+        
+        save(DATAtoPlot,file=paste(filen,'.rdata',sep=''))
+        
+    }
+    Sys.sleep(1)
+    close(pb)
+}
+
 
 #internal functions
 SLE.hypTest<-function(x,k,n,N){
@@ -973,636 +1063,6 @@ SLE.plotMyHeat <- function(x,orPlot,verdata,filename) {
     par(op)
     dev.off()
 }
-SLE.plot.chrom = function(data, maxscale=-Inf,chromlength, radius=1,COLORS,LABEL,SCALE=0.5,
-                          width=chromlength/length(data),TOADD,scale_lines=TRUE) {
-    linesCircle(radius)
-    starts = seq(0, chromlength-1, width)+1
-    
-    if(maxscale> -Inf){
-        scale = SCALE / maxscale
-    }else{
-        scale = SCALE / max(abs(data))
-    }
-    
-    
-    
-    for (i in 1:length(COLORS)) {
-        polygonChrom(starts[i], starts[i]+width-1, chromlength, radius,
-                     data[i] * scale + radius, col=COLORS[i])
-    }
-    
-    if(scale_lines){
-        linesCircle(radius+max(data) * scale,col='black',lwd=2)
-        linesCircle(radius+max(data)/2 * scale,col='darkgray',lty=2)
-        
-        text(0,radius+max(data) * scale+0.05,labels = max(data),pos = 4)
-        text(0,radius+max(data)/2 * scale+0.05,labels = max(data)/2,pos = 4,cex = 0.8,col='black')
-        text(0,-radius-max(data) * scale,labels = LABEL,pos = 3,cex = 0.8)    
-    }
-    
-    
-}
-SLE.radialHallmarkPlot<-function(DATA_VEC,maxscale= -Inf,mc=50,RADIUS=1,SCALE=0.5,LABEL='',TOADD=FALSE,hanna=TRUE,scaleNumb=TRUE,
-                                 resort=TRUE,title=''){
-    
-    hm_colors<-c('#139144','#663913','#C61684','#0D67A3',
-                 '#D56611','#1A1718','#EA2321','#172D83','#ADB5BA','#6B2687')
-    
-    names(hm_colors)<-c("Sustaining Proliferative Signaling",
-                        "Evading Growth Suppressors",
-                        "Avoiding Immune Destruction",
-                        "Enabling Replicative Immortality",
-                        "Tumour-Promoting Inflammation",
-                        "Activating Invasion and Metastasis",
-                        "Inducing Angiogenesis",
-                        "Genome Instability and Mutation",
-                        "Resisting Cell Death",
-                        "Deregulating Cellular Energetics")
-    hm<-names(hm_colors)
-    
-    img <- readPNG("data/HM_circle.png")
-    
-    if (!TOADD){
-        plot.new()
-        plot.window(c(-RADIUS-2, RADIUS+2), c(-RADIUS-2, RADIUS+2))
-        
-        if(hanna){
-            rasterImage(img, -RADIUS, -RADIUS, RADIUS, RADIUS, interpolate=FALSE)    
-        }
-        
-    }
-    
-    
-    if(resort){
-        toPlot<-
-            DATA_VEC$DATA[c("Evading Growth Suppressors",
-                            "Avoiding Immune Destruction",
-                            "Enabling Replicative Immortality",
-                            "Tumour-Promoting Inflammation",
-                            "Activating Invasion and Metastasis",
-                            "Inducing Angiogenesis",
-                            "Genome Instability and Mutation",
-                            "Resisting Cell Death",
-                            "Deregulating Cellular Energetics",
-                            "Sustaining Proliferative Signaling")]
-    }else{
-        toPlot<- DATA_VEC$DATA    
-    }  
-    
-    SLE.plot.chrom(data = toPlot, chromlength = 10000, radius=RADIUS,SCALE=SCALE,maxscale = maxscale,
-                   COLORS = hm_colors[names(toPlot)],LABEL = LABEL,TOADD=TOADD,scale_lines = scaleNumb)
-    #     
-    #     PATTERN[is.na(PATTERN)]<-0
-    #     plot.chrom(PATTERN,10000,radius=2,COLORS = hm_colors[HM])
-    text(0,0,title,cex=2)
-}
-SLE.HallmarkAnalysis<-function(TYPE,PATH_COLLECTION,HM_TABLE,PATH,removeDrivers=FALSE){
-    
-    load(paste('../../../R_MAIN_PAPER_4.0/Fi_gdsc1000_DATA/SEQUENCING/TUMOURS/R/BEMs/',TYPE,'.rdata',sep=''))
-    
-    Dataset<-BEM$logic
-    
-    
-    if(removeDrivers){
-        load('data/IntoGen_cancer_drivers_13_06_2014.rdata')
-        CD<-cancerDrivers$ActingDriver_Symbol[which(cancerDrivers$Tumor_Type==TYPE)]
-        Dataset<-Dataset[setdiff(rownames(Dataset),CD),]
-        Dataset<-Dataset[which(rowSums(Dataset)>0),]
-        Dataset<-Dataset[,which(colSums(Dataset)>0)]
-    }
-    
-    
-    Dataset<-SLAPE.check_and_fix_gs_Dataset(Dataset,updated.hgnc.table = updated.hgnc.table)
-    
-    PFPw<-SLAPE.analyse(EM = Dataset,PATH_COLLECTION = PATH_COLLECTION,
-                        show_progress = TRUE,
-                        NSAMPLES = round(ncol(Dataset)*5/100),
-                        NGENES = 2,
-                        accExLength = TRUE,GeneLenghts = GECOBLenghts,
-                        BACKGROUNDpopulation = rownames(Dataset),
-                        path_probability = 'Bernoulli')
-    
-    SLAPE.write.table(PFP = PFPw,EM = Dataset,
-                      filename = paste(PATH,TYPE,'.csv',sep=''),
-                      fdrth=Inf,exclcovth = 0,PATH_COLLECTION = PATH_COLLECTION,GeneLenghts = GECOBLenghts)
-    
-    save(PFPw,file=paste(PATH,TYPE,'.rdata',sep=''))
-    
-    RES_N<-SLE.PFPtoHM(PFPw,HM_TABLE,PATH_COLLECTION)
-    
-    save(RES,file=paste(PATH,TYPE,'_HM.rdata',sep=''))
-    return(RES)
-    
-}
-SLE.HallmarkAnalysis_bootstrap<-function(TYPE,PATH_COLLECTION,HM_TABLE,PATH,Dataset,NSAMPLES,NTRIALS){
-    
-    NenrichedPaths<-vector()
-    for (i in 1:NTRIALS){
-        
-        print(paste('Trial',i,'of',NTRIALS))
-        cDataset<-Dataset[,sample(1:ncol(Dataset),NSAMPLES)]
-        cDataset<-cDataset[which(rowSums(cDataset)>0),]
-        
-        PFPw<-SLAPE.analyse(EM = cDataset,PATH_COLLECTION = PATH_COLLECTION,
-                            show_progress = TRUE,
-                            NSAMPLES = round(ncol(Dataset)*5/100),
-                            NGENES = 2,
-                            accExLength = TRUE,GeneLenghts = GECOBLenghts,
-                            BACKGROUNDpopulation = rownames(Dataset),
-                            path_probability = 'Bernoulli')
-        RES_N<-SLE.PFPtoHM(PFPw,HM_TABLE,PATH_COLLECTION)
-        
-        NenrichedPaths[i]<-length(which(RES_N$pvals<0.05 & RES_N$FDR<5 & RES_N$ME>50))
-        print(NenrichedPaths)
-    }
-    return(NenrichedPaths)
-}
-SLE.PFPtoHM<-function(PFPw,HM_TABLE,PATH_COLLECTION){
-    
-    
-    IDXS<-match(HM_TABLE$Pathway_name,PATH_COLLECTION$PATHWAY[PFPw$pathway_id])
-    
-    pvals<-rep(1,nrow(HM_TABLE))
-    pvals[which(!is.na(IDXS))]<-
-        PFPw$pathway_pvals[IDXS[which(!is.na(IDXS))]]
-    names(pvals)<-
-        HM_TABLE$Pathway_name
-    
-    FDR<-rep(100,nrow(HM_TABLE))
-    FDR[which(!is.na(IDXS))]<-
-        PFPw$pathway_perc_fdr[IDXS[which(!is.na(IDXS))]]
-    names(FDR)<-
-        HM_TABLE$Pathway_name
-    
-    ME<-rep(100,nrow(HM_TABLE))
-    ME[which(!is.na(IDXS))]<-
-        PFPw$pathway_exclusiveCoverage[IDXS[which(!is.na(IDXS))]]
-    names(ME)<-
-        HM_TABLE$Pathway_name
-    
-    PATTERNS<-pvals
-    PATTERNS[which(FDR>5 | ME < 50)] <- 1
-    
-    RES<-cbind(HM_TABLE,pvals,FDR,ME,PATTERNS)
-    return(RES)
-}
-
-SLAPE.core_components<-function(PFP,EM,PATH='./',fdrth=Inf,exclcovth=0,PATH_COLLECTION){
-
-    filename<-PATH
-    EM<-sign(EM)
-
-    id<-which(PFP$pathway_exclusiveCoverage>exclcovth & PFP$pathway_perc_fdr<fdrth)
-
-    PFP$pathway_id<-PFP$pathway_id[id]
-    PFP$pathway_mus<-PFP$pathway_mus[id]
-    PFP$pathway_EM<-PFP$pathway_EM[id,]
-    PFP$pathway_logOddRatios<-PFP$pathway_logOddRatios[id]
-    PFP$pathway_pvals<-PFP$pathway_pvals[id]
-    PFP$pathway_perc_fdr<-PFP$pathway_perc_fdr[id]
-    PFP$pathway_exclusiveCoverage<-PFP$pathway_exclusiveCoverage[id]
-    PFP$pathway_Probability<-PFP$pathway_Probability[id,]
-
-    NAMES<-PATH_COLLECTION$PATHWAY[PFP$pathway_id]
-
-    NAMES<-str_replace_all(NAMES,',','//')
-
-    np<-length(PFP$pathway_id)
-
-    print('Producing heatmaps for core-components of enriched pathways...')
-
-
-    for (i in 1:np){
-        currentGenes<-PATH_COLLECTION$HGNC_SYMBOL[[PFP$pathway_id[i]]]
-        currentGenes<-intersect(currentGenes,rownames(EM))
-
-        if (i == 1){
-            mutG<-currentGenes
-        }else{
-            mutG<-union(mutG,currentGenes)
-        }
-    }
-
-    mutG<-sort(mutG)
-
-    FREQS<-sort(rowSums(EM[mutG,]),decreasing=TRUE)
-
-    MM<-SLE.buildPathMemb(mutG,PFP$pathway_id,PATH_COLLECTION)
-
-    cm<-fastgreedy.community(graph.incidence(MM))
-
-    cmcardinality<-sort(summary(as.factor(cm$membership)),decreasing=TRUE)
-
-    communities<-as.numeric(names(cmcardinality))
-    ncomm<-length(communities)
-    pb <- txtProgressBar(min=1,max=ncomm,style=3)
-
-    for (i in 1:ncomm){
-        setTxtProgressBar(pb, i)
-
-        filen<-paste(filename,'cm_',i,'.pdf',sep='')
-        elements<-cm$names[which(cm$membership==communities[i])]
-        subData<-MM[intersect(elements,rownames(MM)),intersect(elements,colnames(MM))]
-
-        if (length(dim(subData))>0){
-            subData<-subData[order(rowSums(subData)),]
-            subData<-subData[,order(colSums(subData))]
-            verdata<-colnames(subData)
-        }else{
-            verdata<-intersect(elements,colnames(MM))
-        }
-
-        verdata<-match(verdata,PFP$pathway_id)
-        verdata<- PFP$pathway_perc_fdr[verdata]
-        if (length(dim(subData))>0){
-            names(verdata)<-PATH_COLLECTION$PATHWAY[as.numeric(colnames(subData))]
-
-            SLE.plotMyHeat(subData,100*rowSums(EM[rownames(subData),])/ncol(EM),verdata,filename=filen)
-        }else{
-            names(verdata)<-PATH_COLLECTION$PATHWAY[as.numeric(intersect(elements,colnames(MM)))]
-            SLE.plotMyHeat(matrix(subData,length(subData),1,dimnames = list(names(subData),NULL)),100*rowSums(EM[names(subData),])/ncol(EM),verdata,
-                           filename=filen)
-        }
-
-
-        genesInCoreComponent<-100*rowSums(EM[rownames(subData),])/ncol(EM)
-        pathwaysAndEnrichsFDR<-verdata
-
-        DATAtoPlot<-list(genesInCoreComponents=genesInCoreComponent,pathwaysAndFDR=pathwaysAndEnrichsFDR)
-
-        save(DATAtoPlot,file=paste(filen,'.rdata',sep=''))
-
-    }
-    Sys.sleep(1)
-    close(pb)
-}
-
-
-# SLAPE.HM_core_components<-function(HM_PFP,HM,EM,PATH='./',fdrth=Inf,exclcovth=0,PATH_COLLECTION){
-#     
-#     filename<-PATH
-#     EM<-sign(EM)
-#     
-#     id<-which(HM_PFP$Hallmark==HM & HM_PFP$ME>exclcovth & HM_PFP$FDR<fdrth & HM_PFP$pvals<pvalth)
-#     
-#     HM_PFP<-HM_PFP[id,]
-#     
-#     NAMES<-HM_PFP$Pathway_name
-#     NAMES<-str_replace_all(NAMES,',','//')
-#     
-#     np<-length(NAMES)
-#     
-#     print('Producing heatmaps for core-components of enriched pathways...')
-#     
-#     
-#     for (i in 1:np){
-#         currentGenes<-PATH_COLLECTION$HGNC_SYMBOL[[HM_PFP$Idx[i]]]
-#         currentGenes<-intersect(currentGenes,rownames(EM))
-#         
-#         if (i == 1){
-#             mutG<-currentGenes
-#         }else{
-#             mutG<-union(mutG,currentGenes)
-#         }
-#     }
-#     
-#     mutG<-sort(mutG)
-#     
-#     FREQS<-sort(rowSums(EM[mutG,]),decreasing=TRUE)
-#     
-#     MM<-SLE.buildPathMemb(mutG,HM_PFP$Idx,PATH_COLLECTION)
-#     
-#     cm<-fastgreedy.community(graph.incidence(MM))
-#     
-#     cmcardinality<-sort(summary(as.factor(cm$membership)),decreasing=TRUE)
-#     
-#     communities<-as.numeric(names(cmcardinality))
-#     ncomm<-length(communities)
-#     pb <- txtProgressBar(min=1,max=ncomm,style=3)
-#     
-#     for (i in 1:ncomm){
-#         setTxtProgressBar(pb, i)
-#         
-#         filen<-paste(filename,'cm_',HM,'_',i,'.pdf',sep='')
-#         elements<-cm$names[which(cm$membership==communities[i])]
-#         subData<-MM[intersect(elements,rownames(MM)),intersect(elements,colnames(MM))]
-#         
-#         if (length(dim(subData))>0){
-#             subData<-subData[order(rowSums(subData)),]
-#             subData<-subData[,order(colSums(subData))]
-#             verdata<-colnames(subData)
-#         }else{
-#             verdata<-intersect(elements,colnames(MM))
-#         }
-#         
-#         verdata<-match(verdata,HM_PFP$Idx)
-#         verdata<- HM_PFP$FDR[verdata]
-#         if (length(dim(subData))>0){
-#             names(verdata)<-PATH_COLLECTION$PATHWAY[as.numeric(colnames(subData))]
-#             
-#             SLE.plotMyHeat(subData,100*rowSums(EM[rownames(subData),])/ncol(EM),verdata,filename=filen)
-#         }else{
-#             names(verdata)<-PATH_COLLECTION$PATHWAY[as.numeric(intersect(elements,colnames(MM)))]
-#             SLE.plotMyHeat(matrix(subData,length(subData),1,dimnames = list(names(subData),NULL)),100*rowSums(EM[names(subData),])/ncol(EM),verdata,
-#                            filename=filen)
-#         }
-#         
-#         
-#         genesInCoreComponent<-100*rowSums(EM[rownames(subData),])/ncol(EM)
-#         pathwaysAndEnrichsFDR<-verdata
-#         
-#         DATAtoPlot<-list(genesInCoreComponents=genesInCoreComponent,pathwaysAndFDR=pathwaysAndEnrichsFDR)
-#         
-#         save(DATAtoPlot,file=paste(filen,'.rdata',sep=''))
-#         
-#     }
-#     Sys.sleep(1)
-#     close(pb)
-# }
-# 
 
 
 
-
-# #not documented
-# 
-# SLAPE.vignette<-function(){
-#     LungTSPvariants<-read.table('../../Data/SLAPenrich/externalData/supplementary_table_2.txt',sep='\t',header=TRUE,stringsAsFactors = FALSE)
-#     
-#     GeneIds<-unique(LungTSPvariants$HUGO.Symbol)
-#     GeneIds<-setdiff(GeneIds,'')
-#     
-#     SampleIds<-unique(LungTSPvariants$Tumor.ID)
-#     SampleIds<-as.character(setdiff(SampleIds,NA))
-#     
-#     Dataset<-matrix(0,length(GeneIds),length(SampleIds),dimnames = list(GeneIds,SampleIds))
-#     
-#     
-#     nvariants<-nrow(LungTSPvariants)
-#     for (i in 1:nvariants){
-#         sampleId<-as.character(LungTSPvariants$Tumor.ID[i])
-#         geneId<-LungTSPvariants$HUGO.Symbol[i]
-#         if (geneId!='' & sampleId!='NA'){
-#             Dataset[geneId,sampleId]<-Dataset[geneId,sampleId]+1    
-#         }
-#     }
-#     
-#     ####to change
-#     load('data/SLAPE.updated.hgnc.table_20160210.Rdata')
-#     load('data/SLAPE.20160211_MSigDB_KEGG_hugoUpdated.Rdata')
-#     load("data/SLAPE.all_genes_exonic_content_block_lengths_ensemble_20160209.RData")
-#     
-#     
-#     Dataset<-
-#         SLAPE.check_and_fix_gs_Dataset(Dataset,updated.hgnc.table = updated.hgnc.table)
-#     
-#     PFPw<-
-#         SLAPE.analyse(EM = Dataset,PATH_COLLECTION = KEGG_PATH,
-#                       show_progress = TRUE,
-#                       NSAMPLES = 1,
-#                       NGENES = 1,
-#                       accExLength = TRUE,
-#                       BACKGROUNDpopulation = rownames(Dataset),
-#                       path_probability = 'Bernoulli',
-#                       GeneLenghts = GECOBLenghts)
-#     
-#     SLAPE.pathvis(EM = Dataset,PFP = PFPw,Id = PFPw$pathway_id[which(PFPw$pathway_exclusiveCoverage>80)[1]],
-#                   PATH = './',PATH_COLLECTION = KEGG_PATH)
-#     
-#     
-#     SLAPE.write.table(PFP = PFPw,EM = Dataset,filename = "../../RESULTS/SLAPenrich/LungDS_KEGG_enrichments.csv",
-#                       fdrth=5,exclcovth = 50,PATH_COLLECTION = KEGG_PATH,GeneLenghts = GECOBLenghts)
-#     
-#     load('data/caseStudy_clinicalInfos.Rdata')
-#     load('data/SLAPE.20140608_PATHCOM_HUMAN_nonredundant_intersection_hugoUpdated.Rdata')
-#     
-#     RES<-
-#         SLAPE.diff_SLAPE_analysis(EM = Dataset,contrastMatrix = CLINIC_MAT,
-#                                   BACKGROUNDpopulation = rownames(Dataset),
-#                                   SLAPE.FDRth = 5,display = TRUE,
-#                                   positiveCondition = 'SS_CurrentSmoker',
-#                                   negativeCondition = 'SS_Never',
-#                                   PATH_COLLECTION = PATHCOM_HUMAN,
-#                                   PATH = 'temp.results/')
-#     
-#     RES1<-SLAPE.diff_SLAPE_analysis(EM = Dataset,contrastMatrix = CLINIC_MAT,
-#                                     BACKGROUNDpopulation = rownames(Dataset),
-#                                     SLAPE.FDRth = 5,display = FALSE,
-#                                     positiveCondition = "BAC_Type_nonMucinous",
-#                                     negativeCondition = "BAC_Type_Mucinous",
-#                                     PATH_COLLECTION = PATHCOM_HUMAN,
-#                                     PATH = 'temp.results/')
-#     
-# }
-
-# SLAPE.integrateHallmarks<-function(PATHCOLL){
-#     ## Classification of pahways according the halmark the represent
-#     ## Based on Hanahan et al. Cell. 2011
-#     
-#     pathway2hallmark <- list()
-#     
-#     ## 1) Sustaining Proliferative Signaling
-#     pathway2hallmark[["Sustaining Proliferative Signaling"]] <- sort(c(
-#         ## Proliferation pathways
-#         grep("Cell Cycle", PATHCOLL$PATHWAY, value = T),
-#         grep("Cell Division", PATHCOLL$PATHWAY, value = T),
-#         grep("Growth Hormone", PATHCOLL$PATHWAY, value = T),
-#         
-#         ## Growh factors
-#         # EGF
-#         grep(" EGF", PATHCOLL$PATHWAY, value = T),
-#         grep("^ERBB", PATHCOLL$PATHWAY, value = T, ignore.case = T),
-#         
-#         # FGF
-#         grep("^FGF", PATHCOLL$PATHWAY, value = T),
-#         grep("Signaling By FGFR", PATHCOLL$PATHWAY, value = T),
-#         intersect(grep("FGF", PATHCOLL$PATHWAY, value = T), grep("Activa", PATHCOLL$PATHWAY, value = T)),
-#         
-#         ## Downstream signalling pathways
-#         # PI3K
-#         grep("PI3", PATHCOLL$PATHWAY, value = T),
-#         # AKT
-#         intersect(grep("AKT", PATHCOLL$PATHWAY, value = T), grep("Activa", PATHCOLL$PATHWAY, value = T)),
-#         grep("Signaling By AKT", PATHCOLL$PATHWAY, value = T),
-#         # MAP-kinase
-#         grep("MAP", PATHCOLL$PATHWAY, value = T),
-#         # BRAF
-#         PATHCOLL$PATHWAY[ grep("BRAF", PATHCOLL$HGNC_SYMBOL)],
-#         # Ras
-#         grep("RAS ", PATHCOLL$PATHWAY, value = T),
-#         # mTOR
-#         grep("MTOR", PATHCOLL$PATHWAY, value = T),
-#         # MYC
-#         grep("MYC", PATHCOLL$PATHWAY, value = T),
-#         # CDK2
-#         grep("Cdk2", PATHCOLL$PATHWAY, value = T),
-#         # JAK
-#         grep("JAK/STAT", PATHCOLL$PATHWAY, value = T),
-#         # STAT3
-#         intersect(grep("STAT3", PATHCOLL$PATHWAY, value = T), grep("Activa", PATHCOLL$PATHWAY, value = T))))
-#     
-#     
-#     ## 2) Evading Growth Suppressors
-#     pathway2hallmark[["Evading Growth Suppressors"]] <- sort(c(
-#         
-#         ## Tumor suppressors
-#         # RB
-#         grep("RB1", PATHCOLL$PATHWAY, value = T),
-#         # TP53
-#         grep("P53", PATHCOLL$PATHWAY, value = T),
-#         # APC
-#         grep("APC", PATHCOLL$PATHWAY, value = T),
-#         # PTEN
-#         intersect(PATHCOLL$PATHWAY[ grep("PTEN", PATHCOLL$HGNC_SYMBOL) ], grep('Regulat', PATHCOLL$PATHWAY, value = T)),
-#         # SMAD4
-#         grep("smad4", PATHCOLL$PATHWAY, value = T, ignore.case = T),
-#         
-#         ## Senescence And Autophagy In Cancer
-#         grep("Senescence And Autophagy In Cancer", PATHCOLL$PATHWAY, value = T),
-#         
-#         # Cyclins
-#         grep("^Cyclin", PATHCOLL$PATHWAY, value = T),
-#         grep("Degradation Of Cyclin", PATHCOLL$PATHWAY, value = T),
-#         grep("Inactivation Of Cyclin", PATHCOLL$PATHWAY, value = T),
-#         grep("Checkpoint", PATHCOLL$PATHWAY, value = T),
-#         # TGF
-#         grep("^TGF Beta", PATHCOLL$PATHWAY, value = T)))
-#     
-#     
-#     ## 3) Avoiding immune desctruction
-#     pathway2hallmark[["Avoiding Immune Destruction"]]<-sort(c(grep("immune", PATHCOLL$PATHWAY, value = T,ignore.case = TRUE),
-#                                                               grep("IFN", PATHCOLL$PATHWAY, value = T,ignore.case = TRUE),
-#                                                               names(grep('NLRC5',PATHCOLL$HGNC_SYMBOL,value = TRUE)),
-#                                                               grep("APC", PATHCOLL$PATHWAY, value = T,ignore.case = TRUE),
-#                                                               grep("MHC", PATHCOLL$PATHWAY, value = T,ignore.case = TRUE)))
-#     
-#     ## 4) Enabling Replicative Immortality
-#     pathway2hallmark[["Enabling Replicative Immortality"]] <- sort(c(
-#         # Telomerase TEP1 and TERT
-#         grep("Telomer", PATHCOLL$PATHWAY, value = T),
-#         # DNA damage signalling
-#         grep("Senescence", PATHCOLL$PATHWAY, value = T),
-#         grep("Recognition Of DNA Damage", PATHCOLL$PATHWAY, value = T) ))
-#     
-#     
-#     ## 5) Tumor-promoting inflammation
-#     pathway2hallmark[["Tumour-Promoting Inflammation"]]<-sort(
-#         c(grep('inflammation',PATHCOLL$PATHWAY,value = T,ignore.case = TRUE),
-#           grep('TGF',PATHCOLL$PATHWAY,value = T),
-#           grep('SMAD',PATHCOLL$PATHWAY,value = T),
-#           grep('chemokine',PATHCOLL$PATHWAY,value = T,ignore.case = TRUE),
-#           grep('cytokine',PATHCOLL$PATHWAY,value = T,ignore.case = TRUE),
-#           grep('interferon',PATHCOLL$PATHWAY,value = T,ignore.case = TRUE),
-#           grep('IFN',PATHCOLL$PATHWAY,value = T)))
-#     
-#     
-#     
-#     ## 6) Activating Invasion and Metastasis
-#     pathway2hallmark[["Activating Invasion and Metastasis"]] <- sort(c(
-#         # Epithelial to mesenchymal transition
-#         grep("EMT", PATHCOLL$PATHWAY, value = T),
-#         # Snai1, Slug, Twist, and Zeb1/2, orchestrate the EMT
-#         PATHCOLL$PATHWAY[ grep("SNAI1", PATHCOLL$HGNC_SYMBOL) ],
-#         PATHCOLL$PATHWAY[ grep("SNAI1", PATHCOLL$HGNC_SYMBOL) ],
-#         PATHCOLL$PATHWAY[ grep("ZEB", PATHCOLL$HGNC_SYMBOL) ],
-#         # MTSS1 / BRMS1 / TIAM1
-#         PATHCOLL$PATHWAY[ grep("MTSS1", PATHCOLL$HGNC_SYMBOL) ],
-#         PATHCOLL$PATHWAY[ grep("BRMS1", PATHCOLL$HGNC_SYMBOL) ],
-#         PATHCOLL$PATHWAY[ grep("TIAM1", PATHCOLL$HGNC_SYMBOL) ],
-#         # E-cadherin CDH1
-#         grep("E Cadherin", PATHCOLL$PATHWAY, value = T),
-#         # Metalloproteases (MMPs)
-#         grep("Metalloprot", PATHCOLL$PATHWAY, value = T),
-#         intersect(PATHCOLL$PATHWAY[ grep("MMP9", PATHCOLL$HGNC_SYMBOL) ], grep("Degradation", PATHCOLL$PATHWAY, value = T))))
-#     
-#     ## 7) Inducing Angiogenesis
-#     pathway2hallmark[["Inducing Angiogenesis"]] <- sort(c(
-#         # Wnt
-#         grep("Wnt Signaling Pathway$", PATHCOLL$PATHWAY, value = T),
-#         # Hypoxia
-#         grep("Hypoxia", PATHCOLL$PATHWAY, value = T),
-#         # Angiogenesis
-#         grep("Angiogen", PATHCOLL$PATHWAY, value = T),
-#         # Tie
-#         grep("Tie", PATHCOLL$PATHWAY, value = T),
-#         # PDGF
-#         grep("PDGF", PATHCOLL$PATHWAY, value = T),
-#         # NOTCH1
-#         grep("NOTCH", PATHCOLL$PATHWAY, value = T),
-#         # HIF1A
-#         grep("HIF", PATHCOLL$PATHWAY, value = T),
-#         # VEGF
-#         grep("VEGF", PATHCOLL$PATHWAY, value = T)))
-#     
-#     
-#     ## 8) Genome instability and mutation
-#     pathway2hallmark[["Genome Instability and Mutation"]]<-sort(
-#         c(grep("DNA repair", PATHCOLL$PATHWAY, value = T,ignore.case = TRUE),
-#           grep("DNA damage", PATHCOLL$PATHWAY, value = T,ignore.case = TRUE),
-#           grep("DNA damage", PATHCOLL$PATHWAY, value = T,ignore.case = TRUE),
-#           names(grep("BRCA", PATHCOLL$HGNC_SYMBOL, value = T,ignore.case = TRUE))))
-#     
-#     ## 9) Resisting Cell Death
-#     pathway2hallmark[["Resisting Cell Death"]] <- sort(c(
-#         grep("^Apop", PATHCOLL$PATHWAY, value = T),
-#         grep("Death", PATHCOLL$PATHWAY, value = T),
-#         intersect(grep("BCL", PATHCOLL$PATHWAY, value = T), grep("Apop", PATHCOLL$PATHWAY, value = T)),
-#         grep("FAS ", PATHCOLL$PATHWAY, value = T),
-#         grep("TNFA", PATHCOLL$PATHWAY, value = T, ignore.case = T),
-#         grep("TRAIL", PATHCOLL$PATHWAY, value = T, ignore.case = T),
-#         grep('DNA', PATHCOLL$PATHWAY[ grep("BRCA", PATHCOLL$HGNC_SYMBOL)] , value = T),
-#         grep("CD95", PATHCOLL$PATHWAY, value = T)))
-#     
-#     
-#     ## 10) Deregulating cellular energetics
-#     #Hypoxia Signaling
-#     pathway2hallmark[["Deregulating Cellular Energetics"]] <- sort(c(
-#         grep("HIF", PATHCOLL$PATHWAY, value = T),
-#         #Glycolysis
-#         grep("Glycolysis", PATHCOLL$PATHWAY, value = T),
-#         # Insulin
-#         grep("Insulin", PATHCOLL$PATHWAY, value = T),
-#         # Warburg Effect
-#         grep("Warburg Effect", PATHCOLL$PATHWAY, value = T),
-#         # AMPK
-#         intersect(grep("AMPK", PATHCOLL$PATHWAY, value = T), grep("Energy", PATHCOLL$PATHWAY, value = T)),
-#         # Energy Metabolism
-#         grep("Mitochondrial Beta Oxidation", PATHCOLL$PATHWAY, value = T))
-#     )
-#     
-#     
-#     ####################################################
-#     
-#     
-#     
-#     pathway2hallmark <- unique(melt(pathway2hallmark))[, c(2,1) ]
-#     idxs<-match(pathway2hallmark[,2],PATHCOLL$PATHWAY)
-#     pathway2hallmark<-cbind(idxs,pathway2hallmark)
-#     names(pathway2hallmark) = c('Idx','Hallmark', 'Pathway_name')
-#     
-#     psets<-unique(pathway2hallmark[,3])
-#     
-#     idx<-match(psets,PATHCOLL$PATHWAY)
-#     
-#     PATHCOLL$UNIPROTID<-
-#         PATHCOLL$UNIPROTID[idx]
-#     
-#     PATHCOLL$HGNC_SYMBOL<-
-#         PATHCOLL$HGNC_SYMBOL[idx]
-#     
-#     PATHCOLL$SOURCE<-
-#         PATHCOLL$SOURCE[idx]
-#     
-#     PATHCOLL$PATHWAY<-
-#         PATHCOLL$PATHWAY[idx]
-#     
-#     
-#     PATHCOLL$Ngenes<-
-#         PATHCOLL$Ngenes[idx]
-#     
-#     PATHCOLL$backGround<-
-#         sort(unique(unlist(PATHCOLL$HGNC_SYMBOL)))
-#     
-#     return(list(PATHCOLL=PATHCOLL,HallMark_Table=pathway2hallmark))
-#     
-# }

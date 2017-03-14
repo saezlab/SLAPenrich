@@ -50,7 +50,7 @@ Francesco Iorio - iorio@ebi.ac.uk
 data(SLAPE.PATHCOM_HUMAN)
 data(SLAPE.hgnc.table)
 updatedGeneSymbolsDataset<-
-SLAPE.check_and_fix_path_collection(PATHCHOM_HUMAN,hgnc.table)
+SLAPE.check_and_fix_path_collection(PATHCOM_HUMAN,hgnc.table)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

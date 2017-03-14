@@ -13,7 +13,7 @@ Generatig a heatmap of the alteration matrix of a SLAPenriched pathway and barpl
     
 }
 \usage{
-SLAPE.pathvis(EM, PFP, Id, i = NULL, PATH = "./", PATH_COLLECTION)
+SLAPE.pathvis(EM, PFP, Id, prefName = NULL, PATH = "./", PATH_COLLECTION)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -27,10 +27,10 @@ SLAPE.pathvis(EM, PFP, Id, i = NULL, PATH = "./", PATH_COLLECTION)
 }
   \item{Id}{
     The index of the pathway for which the pdf files should be produced in the vectors/lists of the pathway collection set specified in 
-    \code{PATH_COLLECTION}
+    \code{PATH_COLLECTION}.
 }
-  \item{prefName}{
-        A string containing the prefix that should be added to the pdf file name.
+\item{prefName}{
+   A string specifing the prefix to be added to the pdf file name (NULL by default).
 }
   \item{PATH}{
         String specifiying the path of the pdf file to be created (including its name).

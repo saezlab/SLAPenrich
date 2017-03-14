@@ -21,3 +21,10 @@ import(qvalue)
 import(igraph)
 import(biomaRt)
 
+
+importFrom("grDevices", "colorRampPalette", "dev.off", "pdf")
+importFrom("graphics", "axis", "barplot", "image", "layout", "par")
+importFrom("stats", "dist", "hclust", "p.adjust", "phyper")
+importFrom("utils", "download.file", "read.csv", "setTxtProgressBar",
+             "txtProgressBar", "write.csv")
+
