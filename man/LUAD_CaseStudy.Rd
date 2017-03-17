@@ -26,6 +26,6 @@ The dataset from which this matrix was derived has been studied in Ding et al, 2
 Ding L, Getz G, Wheeler DA, Mardis ER, McLellan MD, Cibulskis K, et al. Somatic mutations affect key pathways in lung adenocarcinoma. Nature. 2008;455:1069-75.
 }
 \seealso{
-\code{\link{LUAD_CaseStudy_updatedGS}}
+\code{\link{LUAD_CaseStudy_ugs}}
 }
 \keyword{datasets}

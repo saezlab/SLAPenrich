@@ -1,5 +1,5 @@
-\name{LUAD_CaseStudy_updatedGS}
-\alias{LUAD_CaseStudy_updatedGS}
+\name{LUAD_CaseStudy_ugs}
+\alias{LUAD_CaseStudy_ugs}
 \docType{data}
 \title{
     Genomic event matrix derived from variants found in a cohort of 188 lung adenocarcinoma patients, with updated gene names.

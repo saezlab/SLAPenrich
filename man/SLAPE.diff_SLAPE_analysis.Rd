@@ -118,7 +118,7 @@ Francesco Iorio - iorio@ebi.ac.uk
 \examples{
 #Loading the Genomic Event data object derived from variants annotations
 #identified in 188 Lung Adenocarcinoma patients (Ding et al, 2008)
-data(LUAD_CaseStudy_updatedGS)
+data(LUAD_CaseStudy_ugs)
 
 #Loading KEGG pathway gene-set collection data object
 data(SLAPE.PATHCOM_HUMAN_nr_i_hu_2016)

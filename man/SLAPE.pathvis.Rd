@@ -64,7 +64,7 @@ heatmaps and barplots for all the SLAPenriched pathways found in a list of resul
 \examples{
     #Loading the Genomic Event data object derived from variants annotations
     #identified in 188 Lung Adenocarcinoma patients (Ding et al, 2008)
-    data(LUAD_CaseStudy_updatedGS)
+    data(LUAD_CaseStudy_ugs)
 
     #Loading KEGG pathway gene-set collection data object
     data(SLAPE.MSigDB_KEGG_hugoUpdated)
