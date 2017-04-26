@@ -12,7 +12,7 @@ This package contains the R package and accompanying scripts that implement the 
 
 
 ### References
-   * Main reference: [[Iorio et al., 2017]](http://biorxiv.org/content/early/2017/03/27/077701)
-   * Applications: [[Brammeld et al 2017 (Genome Research) ]](http://genome.cshlp.org/content/early/2017/03/15/gr.213546.116.abstract?cited-by=yes&legid=genome;gr.213546.116v2)
+   * Main reference: [Iorio et al., 2017](http://biorxiv.org/content/early/2017/03/27/077701)
+   * Applications: [Brammeld et al., 2017. Genome Research ](http://genome.cshlp.org/content/early/2017/03/15/gr.213546.116.abstract?cited-by=yes&legid=genome;gr.213546.116v2)
 
 
