@@ -14,7 +14,7 @@ permalink:        pretty
 # Setup
 title:            SLAPenrich
 tagline:          Sample-population Level Analysis of Pathway enrichments
-description:      "Pathway-level analysis tool set for genomic data from heterogeneous populations under positive selection"
+description:      "Pathway-level analysis tool set for genomic data"
 #url:              https://github.com/saezlab/projectDocumentationTemplate
 baseurl:          /SLAPenrich/
 toollogo:         /SLAPenrich/public_logo.png
