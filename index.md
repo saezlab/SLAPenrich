@@ -7,7 +7,6 @@ title: Home
 
 SLAPenrich (Sample-population Level Analysis of Pathway enrichments), is a pathway-level analysis tool set for the characterization of genomics data from heterogeneous populations under positive selection.
 
-
 This package contains the R package and accompanying scripts that implement the method as well as several examples of how to run a SLAPenrich analysis.
 
 
