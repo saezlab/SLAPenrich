@@ -4,7 +4,8 @@ title: Usage
 ---
 
 
-To start using `SLAPenrich`, first load the sparse **binary matrix data (EM)**. See the example `LUAD_CaseStudy` included in the package:
+
+To start using SLAPenrich, first load the sparse **binary matrix data (EM)**. See the example `LUAD_CaseStudy` included in the package:
 
 ```r
 data(LUAD_CaseStudy)
@@ -12,15 +13,10 @@ class(LUAD_CaseStudy)
 LUAD_CaseStudy[1:5, 1:5]
 ```
 
-Then load the **list of pathway gene sets (PATH_COLLECTION)**. `SLAPenrich` provides two collections of pathways from two databases: KEGG and PathwayCommons. For example, to load the pathways from KEGG type:
+Then load the **list of pathway gene sets (PATH_COLLECTION)**. SLAPenrich provides two collections of pathways from two databases: KEGG and PathwayCommons. For example, to load the pathways from KEGG type:
 
 ```r
 data(SLAPE.MSigDB_KEGG_hugoUpdated)
-```
-
-See the KEGG collection `SLAPE.MSigDB_KEGG_hugoUpdated`:
-
-```r
 class(KEGG_PATH)
 names(KEGG_PATH)
 ```
@@ -43,7 +39,7 @@ names(mySLAPE_analysis)
 ```
 
 
-Plot your core components summary. This will generate a series of pdf files in the PATH folder. Each pdf file will represent a core component (i.e. a group of related patways):
+Plot your core components summary with `SLAPE.core_components`. This will generate a series of pdf files in the PATH folder. Each pdf file will represent a core component (i.e. a group of related patways):
 
 ```r
 SLAPE.core_components(PATH = "./", PFP=mySLAPE_analysis, EM=LUAD_CaseStudy, PATH_COLLECTION=KEGG_PATH)
