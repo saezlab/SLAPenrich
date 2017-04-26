@@ -3,8 +3,6 @@ layout: page
 title: Usage
 ---
 
-## Usage
-
 
 To start using `SLAPenrich`, first load the sparse **binary matrix data (EM)**. 
 
