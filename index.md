@@ -15,7 +15,7 @@ This package contains the R package and accompanying scripts that implement the 
 
 ## References
 Please use this reference to cite SLAPenrich:
->  Iorio F., Garcia-Alonso L., Brammeld J., Martincorena I., Wille D. R.,  McDermott U.,  Saez-Rodriguez J. (2017). [Dissecting the genomic heterogeneity of cancer hallmarks' acquisition with SLAPenrich](http://biorxiv.org/content/early/2017/03/27/077701). _Under Revision_
+>  Iorio F., Garcia-Alonso L., Brammeld J., Martincorena I., Wille D. R.,  McDermott U.,  Saez-Rodriguez J. (2017). [Dissecting the genomic heterogeneity of cancer hallmarks' acquisition with SLAPenrich](http://europepmc.org/abstract/MED/29713020). _Scientific Reports 2018_
    
 
 ### Applications of SLAPenrich:
